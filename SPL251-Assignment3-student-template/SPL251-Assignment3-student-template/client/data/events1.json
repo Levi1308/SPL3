@@ -1,0 +1,75 @@
+{
+    "channel_name": "police",
+    "events": [
+        {
+            "event_name": "Grand Theft Auto",
+            "city": "Liberty City",
+            "date_time": 1734961200,
+            "description": "Pink Lampadati Felon with license plate \"STOL3N1\". White male 1.85 with black baseball hat.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Vandalism",
+            "city": "Los Alamos",
+            "date_time": 1735681200,
+            "description": "Multiple cars were spray-painted in a residential neighborhood on Oak Drive. Suspect fled before police arrived.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Burglary",
+            "city": "Raccoon City",
+            "date_time": 1734939900,
+            "description": "Suspect broke into a residence through a back window. Described as wearing a gray hoodie and blue jeans. Seen fleeing on foot towards Oak Street.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Hit and Run",
+            "city": "Vice City",
+            "date_time": 1735006800,
+            "description": "Black SUV struck a pedestrian at Main Street and fled the scene. Victim sustained serious injuries and was transported to the hospital.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Armed Robbery",
+            "city": "Silent Hill",
+            "date_time": 1735078500,
+            "description": "Two masked suspects armed with handguns robbed a convenience store on Elm Avenue. Stolen cash estimated at $500.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Assault",
+            "city": "Pallet Town",
+            "date_time": 1735162200,
+            "description": "Male suspect assaulted another individual during an altercation at Liberty Mall. Victim suffered minor injuries.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Drug Possession Arrest",
+            "city": "Gotham City",
+            "date_time": 1735194000,
+            "description": "Police apprehended a suspect in possession of illegal substances near Green Park.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": true
+            }
+        }
+    ]
+}
