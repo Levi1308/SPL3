@@ -1,4 +1,4 @@
-# Emergency Service Platform (SPL251 - Assignment 3)
+# Emergency Service Platform 
 
 ## Overview
 This project implements an "Emergency Service" platform that allows users to subscribe to emergency channels and receive relevant updates. The platform facilitates communication between clients and a centralized server using the STOMP (Simple-Text-Oriented Messaging Protocol).
