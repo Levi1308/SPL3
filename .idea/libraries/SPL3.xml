@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="SPL3">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/Skeleton/Skeleton/server/src/main/java" />
+    </SOURCES>
+  </library>
+</component>

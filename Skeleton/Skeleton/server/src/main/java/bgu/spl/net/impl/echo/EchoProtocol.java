@@ -1,11 +1,14 @@
 package bgu.spl.net.impl.echo;
 
 import bgu.spl.net.api.MessagingProtocol;
+import bgu.spl.net.srv.Connections;
+
 import java.time.LocalDateTime;
 
 public class EchoProtocol implements MessagingProtocol<String> {
+
     @Override
-    public void start(int i, Connections<T> connections) {
+    public void start(int connectionId, Connections<String> connections) {
 
     }
 

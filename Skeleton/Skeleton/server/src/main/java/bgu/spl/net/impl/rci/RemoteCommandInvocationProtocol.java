@@ -14,7 +14,7 @@ public class RemoteCommandInvocationProtocol<T> implements MessagingProtocol<Ser
     }
 
     @Override
-    public void start(int i, Connections<T> connections) {
+    public void start(int connectionId, Connections<Serializable> connections) {
         return;
     }
 

@@ -2,6 +2,7 @@ package bgu.spl.net.impl.newsfeed;
 
 import bgu.spl.net.impl.rci.Command;
 import java.io.Serializable;
+import bgu.spl.net.impl.newsfeed.NewsFeed;
 
 public class PublishNewsCommand implements Command<NewsFeed> {
  
@@ -12,11 +13,10 @@ public class PublishNewsCommand implements Command<NewsFeed> {
         this.channel = channel;
         this.news = news;
     }
- 
+
+
     @Override
-    public Serializable execute(NewsFeed feed) {
-        feed.publish(channel, news);
-        return "OK";
+    public Serializable execute(NewsFeed arg) {
+        return null;
     }
- 
 }
