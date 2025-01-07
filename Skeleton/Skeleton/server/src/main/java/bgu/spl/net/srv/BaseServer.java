@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.function.Supplier;
+import bgu.spl.net.srv.Server;
+import bgu.spl.net.srv.BlockingConnectionHandler;
 
 public abstract class BaseServer<T> implements Server<T> {
 
@@ -37,7 +39,7 @@ public abstract class BaseServer<T> implements Server<T> {
 
                 Socket clientSock = serverSock.accept();
 
-                BlockingConnectionHandler<T> handler = new BlockingConnectionHandler<>(
+               BlockingConnectionHandler<T> handler = new BlockingConnectionHandler<>(
                         clientSock,
                         encdecFactory.get(),
                         protocolFactory.get());

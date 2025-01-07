@@ -6,6 +6,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import bgu.spl.net.srv.ConnectionHandler;
 
 public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler<T> {
 

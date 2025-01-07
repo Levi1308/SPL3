@@ -4,6 +4,10 @@ import bgu.spl.net.api.MessagingProtocol;
 import java.time.LocalDateTime;
 
 public class EchoProtocol implements MessagingProtocol<String> {
+    @Override
+    public void start(int i, Connections<T> connections) {
+
+    }
 
     private boolean shouldTerminate = false;
 

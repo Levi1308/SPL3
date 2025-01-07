@@ -1,6 +1,8 @@
 package bgu.spl.net.impl.echo;
 
 import bgu.spl.net.srv.Server;
+import bgu.spl.net.impl.echo.EchoProtocol;
+import bgu.spl.net.impl.echo.LineMessageEncoderDecoder;
 
 public class EchoServer {
 

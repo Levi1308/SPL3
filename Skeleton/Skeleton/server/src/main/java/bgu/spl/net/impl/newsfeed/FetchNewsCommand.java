@@ -2,6 +2,7 @@ package bgu.spl.net.impl.newsfeed;
 
 import bgu.spl.net.impl.rci.Command;
 import java.io.Serializable;
+import bgu.spl.net.impl.newsfeed.NewsFeed;
 
 public class FetchNewsCommand implements Command<NewsFeed> {
 

@@ -1,6 +1,9 @@
 package bgu.spl.net.impl.newsfeed;
 
 import bgu.spl.net.impl.rci.RCIClient;
+import bgu.spl.net.impl.newsfeed.PublishNewsCommand;
+import bgu.spl.net.impl.newsfeed.FetchNewsCommand;
+
 
 public class NewsFeedClientMain {
 

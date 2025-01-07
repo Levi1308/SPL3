@@ -6,6 +6,9 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.Socket;
+import bgu.spl.net.impl.rci.ObjectEncoderDecoder;
+import bgu.spl.net.impl.rci.Command;
+
 
 public class RCIClient implements Closeable {
 
