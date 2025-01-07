@@ -1,0 +1,32 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "make StompWCIClient",
+            "command": "make",
+            "args": ["StompWCIClient"],
+            "options": {
+                "cwd": "${workspaceFolder}/client"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "make EchoClient",
+            "command": "make",
+            "args": ["EchoClient"],
+            "options": {
+                "cwd": "${workspaceFolder}/client"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "mvn compile",
+            "command": "mvn",
+            "args": ["compile"],
+            "options": {
+                "cwd": "${workspaceFolder}/server"
+            }
+        }
+    ],
+    "version": "2.0.0"
+}
