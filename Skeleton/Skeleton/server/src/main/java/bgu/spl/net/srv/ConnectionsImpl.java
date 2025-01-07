@@ -6,12 +6,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionsImpl<T> implements Connections<T> {
     private ConcurrentHashMap<Integer, ConnectionHandler<T>> clients = new ConcurrentHashMap<>();
-    private final Map<String, Set<Integer>> channelSubscriptions = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Set<Integer>> channelSubscriptions = new ConcurrentHashMap<>();
 
     
     @Override
     public boolean send(int connectionId, T msg) {
-        ConnectionHandler<T> handler = clients.get(connectionId);
+        ConnectionHandler<T> handler = clients.getOrDefault(connectionId, null);
         if (handler != null) {
             handler.send(msg);
             return true;
@@ -21,10 +21,10 @@ public class ConnectionsImpl<T> implements Connections<T> {
 
     @Override
     public void send(String channel, T msg) {
-        Set<Integer> subscribers = channelSubscriptions.get(channel);
+        Set<Integer> subscribers = channelSubscriptions.getOrDefault(channel,null);
         if (subscribers != null) {
             for (Integer connectionId : subscribers) {
-                ConnectionHandler<T> handler = clients.get(connectionId);
+                ConnectionHandler<T> handler = clients.getOrDefault(connectionId,null);
                 if (handler != null) {
                     handler.send(msg);
                 }
@@ -43,7 +43,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     }
 
     public void unsubscribeClientFromChannel(String channel, int connectionId) {
-        Set<Integer> subscribers = channelSubscriptions.get(channel);
+        Set<Integer> subscribers = channelSubscriptions.getOrDefault(channel,null);
         if (subscribers != null) {
             subscribers.remove(connectionId);
         }
