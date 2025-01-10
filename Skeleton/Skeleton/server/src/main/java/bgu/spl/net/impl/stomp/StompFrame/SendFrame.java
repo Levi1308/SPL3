@@ -1,4 +1,4 @@
-package bgu.spl.net.impl.stomp;
+package bgu.spl.net.impl.stomp.StompFrame;
 
 public class SendFrame extends StompFrame{
     String destination;
