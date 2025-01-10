@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\server",
+    "\\server\\src",
+    "\\server\\src\\main",
+    "\\server\\src\\main\\java",
+    "\\server\\src\\main\\java\\bgu",
+    "\\server\\src\\main\\java\\bgu\\spl",
+    "\\server\\src\\main\\java\\bgu\\spl\\net",
+    "\\server\\src\\main\\java\\bgu\\spl\\net\\impl",
+    "\\server\\src\\main\\java\\bgu\\spl\\net\\impl\\stomp"
+  ],
+  "SelectedNode": "\\server\\src\\main\\java\\bgu\\spl\\net\\impl\\stomp\\ConnectedFrame.java",
+  "PreviewInSolutionExplorer": false
+}

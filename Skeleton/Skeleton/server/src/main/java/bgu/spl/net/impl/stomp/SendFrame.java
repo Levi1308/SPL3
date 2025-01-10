@@ -8,4 +8,7 @@ public class SendFrame extends StompFrame{
         super("SEND", body);
         this.destination=destination;
     }
+    public String getDestination(){
+        return destination;
+    }
 }

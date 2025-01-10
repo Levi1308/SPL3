@@ -9,4 +9,7 @@ public class ConnectedFrame extends StompFrame{
         super("CONNECTED",null);
         this.version=version;
     }
+    public String getVersion(){
+        return version;
+    }
 }
