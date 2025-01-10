@@ -15,12 +15,14 @@ public abstract class BaseServer<T> implements Server<T> {
     private final Supplier<MessagingProtocol<T>> protocolFactory;
     private final Supplier<MessageEncoderDecoder<T>> encdecFactory;
     private ServerSocket sock;
+    private Connections<T> connection;
 
     public BaseServer(
             int port,
             Supplier<MessagingProtocol<T>> protocolFactory,
             Supplier<MessageEncoderDecoder<T>> encdecFactory) {
 
+        this.connection = new ConnectionsImpl<>();
         this.port = port;
         this.protocolFactory = protocolFactory;
         this.encdecFactory = encdecFactory;
@@ -40,11 +42,14 @@ public abstract class BaseServer<T> implements Server<T> {
                 Socket clientSock = serverSock.accept();
 
                BlockingConnectionHandler<T> handler = new BlockingConnectionHandler<>(
+                        connection,
+                        ConnectionsImpl.connectionID,
                         clientSock,
                         encdecFactory.get(),
-                        protocolFactory.get());
+                        protocolFactory.get() );
 
                 execute(handler);
+                ConnectionsImpl.connectionID++;
             }
         } catch (IOException ex) {
         }

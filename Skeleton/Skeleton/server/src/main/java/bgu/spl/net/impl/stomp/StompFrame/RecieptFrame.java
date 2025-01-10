@@ -1,4 +1,4 @@
-package bgu.spl.net.impl.stomp;
+package bgu.spl.net.impl.stomp.StompFrame;
 
 public class RecieptFrame extends StompFrame{
     String versionId;
@@ -6,5 +6,6 @@ public class RecieptFrame extends StompFrame{
     {
         super("RECIEPT",null);
         this.versionId=version;
-    int x="asdrr"
+    int x=0;
+    }
 }
