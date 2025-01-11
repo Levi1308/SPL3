@@ -1,8 +1,9 @@
-package bgu.spl.net.impl.stomp.StompFrame;
+package bgu.spl.net.impl.stomp;
 
 public class Disconnect extends StompFrame{
     
     String id;
+
 
     public Disconnect(String id)
     {

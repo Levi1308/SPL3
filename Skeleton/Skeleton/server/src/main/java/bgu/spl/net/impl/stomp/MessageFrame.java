@@ -1,4 +1,5 @@
-package bgu.spl.net.impl.stomp.StompFrame;
+package bgu.spl.net.impl.stomp;
+
 public class MessageFrame extends StompFrame {
     private String subscription; // A client-unique ID
     private String destination;
