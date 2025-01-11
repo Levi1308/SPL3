@@ -1,17 +1,19 @@
 package bgu.spl.net.impl.stomp;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 import bgu.spl.net.api.StompMessagingProtocol;
-import bgu.spl.net.impl.stomp.StompFrame.ConnectFrame;
-import bgu.spl.net.impl.stomp.StompFrame.*;
+import bgu.spl.net.impl.stomp.StompFrame;
 import bgu.spl.net.srv.ConnectionHandler;
 import bgu.spl.net.srv.Connections;
 
 public class StompProtocolImpl  implements StompMessagingProtocol<String> {
     private boolean shouldTerminate = false;
+
     private int connectionId;
+
     private Connections<String> connections;
 
     int messageID = 0; //Generator of message ID
@@ -28,61 +30,173 @@ public class StompProtocolImpl  implements StompMessagingProtocol<String> {
 
     @Override
     public void process(String message) {
+        System.out.println(message); //Printing the received frame
+        StompFrame frame = new StompFrame(message);
+        shouldTerminate = (frame.getCommand().equals("DISCONNECT"));
         String[] lines=message.split("\n");
         String command=lines[0].trim();
-        Map<String,String> headers=parseStompMessage(lines);
-            switch (command) {
-                case "ERROR":
-                //ErrorFrame errorFrame=new ErrorFrame(frame[1],frame[2],frame[3]);
-                String error_message=headers.get("message"); // Description of the error
-                int receiptId=Integer.parseInt(headers.get("reciept-id")); // Optional receipt ID for the related frame 
-                String error_body=headers.get("body");//should be body description headline
-
-                    break;
+        Map<String,String> headers=frame.getHeaders();
+            switch (frame.getCommand()) {
                 case "CONNECT":
-                int connect_version=Integer.parseInt(headers.get("accept-version"));
+                double connect_version=Integer.parseInt(headers.get("accept-version"));
                 String host=headers.get("host");
                 String login=headers.get("login");
                 String passcode=headers.get("passcode");
-                //ConnectFrame connectFrame=new ConnectFrame(frame[1],frame[2],frame[3],frame[4]);
-                //connections.addConnection(connectFrame.getLogin(), new ConnectionHandler<T>());
+                boolean userAlreadyConnected = connections.userConnectedAlready(login);
+                if (userAlreadyConnected) { //User is already connected to a different client
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("message", "User is already connected");
+                StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output); //Sending back error frame
+                try {
+                    Thread.sleep(100);
+                    }
+                    catch(Exception ex) {}
+                try {
+                    shouldTerminate = true;
+                    connections.disconnect(connectionID); //Resetting all client related data (subscriptions & from loggedIn clients list)
+                    connections.removeConnection(connectionID);
+                    connections.getConnection(connectionID).close();
+                }
+                catch (IOException exception) {}
+            }
+            else if (connections.connectUser(login, passcode, connectionID)) { //Trying to connect the user to the client
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("version", "1.2");
+                StompFrame outputFrame = new StompFrame("CONNECTED", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output);
+            }
+            else { //User connection failed cause of wrong password
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("message", "Invalid password");
+                StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output);
+                try {
+                    Thread.sleep(100);
+                    }
+                    catch(Exception ex) {}
+                try {
+                    shouldTerminate = true;
+                    connections.disconnect(connectionID);
+                    connections.removeConnection(connectionID);
+                    connections.getConnection(connectionID).close();
+                }
+                catch (IOException exception) {}
+            }
+
                 break;
                 case "SUBSCRIBE":
-                //SubscribeFrame subFrame=new SubscribeFrame(frame[1], frame[2]);
-                int sub_id=Integer.parseInt(headers.get("id"));
-                String sub_destination=headers.get("destination");
+                String receiptID = headers.get("receipt");
+                String subscriptionID = headers.get("id");
+                String channel = headers.get("destination").substring(1); //without the '/' in the beginning of the channel
+                boolean done = connections.addChannelSubscription(channel, Integer.parseInt(subscriptionID), connections.getConnection(connectionID));
+            if (done) { //Managed to add the subscription
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("receipt-id", receiptID);
+                StompFrame outputFrame = new StompFrame("RECEIPT", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output);
+            }
+            else { //Didn't manage to add the subscription because the user already subscribed to it.
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("receipt-id", receiptID);
+                outputHeaders.put("message", "The user already subscribed to channel: " + channel);
+                StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output);
+                try {
+                Thread.sleep(100);
+                }
+                catch(Exception ex) {}
+                try {
+                    shouldTerminate = true;
+                    connections.disconnect(connectionID);
+                    connections.removeConnection(connectionID);
+                    connections.getConnection(connectionID).close();
+                }
+                catch (IOException exception) {}
+            }
+            
                 break;
                 case "UNSUBSCRIBE":
-                //UnSubscribedFrame unsubFrame=new UnSubscribedFrame(frame[1]);
-                int unsub_id=Integer.parseInt(headers.get("id"));
+                String receiptIDun = headers.get("receipt");
+                String subscriptionIDun = headers.get("id");
+                boolean doneUn = connections.removeChannelSubscription(Integer.parseInt(subscriptionIDun), connections.getConnection(connectionID)); 
+                if (doneUn) { //Managed to remove the subscription
+                    Map<String, String> outputHeaders = new HashMap<>();
+                    outputHeaders.put("receipt-id", receiptIDun);
+                    StompFrame outputFrame = new StompFrame("RECEIPT", outputHeaders, "");
+                    String output = outputFrame.createFrame();
+                    connections.send(connectionID, output);
+                }
+                else { //Didn't manage to remove the subscription because the user wasn't subscribed to it.
+                    Map<String, String> outputHeaders = new HashMap<>();
+                    outputHeaders.put("receipt-id", receiptIDun);
+                    outputHeaders.put("message", "The user isn't subscribed with that number: " + subscriptionIDun);
+                    StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
+                    String output = outputFrame.createFrame();
+                    connections.send(connectionID, output);
+                    try {
+                        Thread.sleep(100);
+                        }
+                        catch(Exception ex) {}
+                    try {
+                        shouldTerminate = true;
+                        connections.disconnect(connectionID);
+                        connections.removeConnection(connectionID);
+                        connections.getConnection(connectionID).close();
+                    }
+                    catch (IOException exception) {}
+                }
                 break;
                 case "SEND":
-                //SendFrame sendFrame=new SendFrame(frame[1], frame[2]);
-                String send_destination=headers.get("destination");
-                String send_body=headers.get("body");//will fail
+                String channelS = headers.get("destination").substring(1); //without the '/' in the beginning of the channel
+                int subscriptionIDS = connections.getUserSubID(channelS, connectionID);
+            if (subscriptionIDS == -1) { //If the user isn't subscribed to the sent report's channel
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("message", "The user isn't subscribed to channel: " + channelS);
+                StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output);
+                try {
+                    Thread.sleep(100);
+                    }
+                    catch(Exception ex) {}
+                try {
+                    shouldTerminate = true;
+                    connections.disconnect(connectionID);
+                    connections.removeConnection(connectionID);
+                    connections.getConnection(connectionID).close();
+                }
+                catch (IOException exception) {}
+            }
+            else { //The user is subscribed to the reported channel
+                String bodyMessage = frame.getBody();
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("subscription", "" + subscriptionIDS);
+                outputHeaders.put("message-id", "" + messageID);
+                outputHeaders.put("destination", "/" + channelS);
+                StompFrame outputFrame = new StompFrame("MESSAGE", outputHeaders, bodyMessage);
+                String output = outputFrame.createFrame();
+                messageID++;
+                connections.send(channelS, output); //Sending the report to all the users subscribed to the channel
+            }
                 break;
-                case "CONNECTED":
-                //ConnectedFrame connectedFrame=new ConnectedFrame(frame[1]);
-                int connected_version=Integer.parseInt(headers.get("version"));
-                break;
+                
                 case "DISCONNECT":
-                //Disconnect disconnect=new Disconnect(frame[1]);
-                int disconnect_reciept=Integer.parseInt(headers.get("reciept"));;
-                //connections.disconnect(disconnect_id);
+                String receiptIDis = headers.get("receipt");
+                Map<String, String> outputHeaders = new HashMap<>();
+                outputHeaders.put("receipt-id", receiptIDis);
+                StompFrame outputFrame = new StompFrame("RECEIPT", outputHeaders, "");
+                String output = outputFrame.createFrame();
+                connections.send(connectionID, output); //Sending back receipt for disconnecting
+                connections.disconnect(connectionID); //Removing the user from loggedIn & the user's subscription
                 break;
-                case "RECIEPT":
-                //RecieptFrame recieptFrame=new RecieptFrame(frame[1]);
-                int reciept_id=Integer.parseInt(headers.get("reciept-id"));
-                break;
-                case "MESSAGE":
-                //MessageFrame messageFrame=new MessageFrame(frame[1],frame[2],frame[3],frame[4]);
-                int subscription=Integer.parseInt(headers.get("subscription")); // A client-unique ID
-                String message_destination=headers.get("destination");
-                int messageId=Integer.parseInt(headers.get("message-id")); // A server-unique ID for the message
-                String message_body=headers.get("body");
-                break;
-                default:
-                    break;
+                
+               
             }
         
     }
@@ -93,6 +207,7 @@ public class StompProtocolImpl  implements StompMessagingProtocol<String> {
        return shouldTerminate;
     }
 
+/* 
      public Map<String, String> parseStompMessage(String[] lines) {
          // Initialize a map to store headers
         Map<String, String> headers = new HashMap<>();
@@ -122,7 +237,7 @@ public class StompProtocolImpl  implements StompMessagingProtocol<String> {
             System.out.println("Body: " + body);
         }
             */
-        return headers;
-     }
- 
+        //return headers;
+   
+
 }
