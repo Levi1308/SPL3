@@ -7,7 +7,7 @@ public class Disconnect extends StompFrame{
 
     public Disconnect(String id)
     {
-        super("DISCONNECT",  null);
+        super("DISCONNECT");
         this.id=id;
     }
     public String getId(){

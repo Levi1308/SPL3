@@ -7,7 +7,7 @@ public class UnSubscribedFrame extends StompFrame{
 
     public UnSubscribedFrame(String id)
     {
-        super("UNSUBSCRIBE",  null);
+        super("UNSUBSCRIBE");
         this.id=id;
     }
     public String getId(){

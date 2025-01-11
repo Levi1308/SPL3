@@ -1,4 +1,4 @@
-package bgu.spl.net.impl.stomp.StompFrame;
+package bgu.spl.net.impl.stomp.Frames;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;

@@ -7,7 +7,7 @@ public class ConnectFrame extends StompFrame {
     private String passcode;
 
     public ConnectFrame(String version, String host, String login, String passcode, String body) {
-        super("CONNECT", null);
+        super("CONNECT");
         this.version = version;
         this.host = "stomp.cs.bgu.ac.il";
         this.login = login;

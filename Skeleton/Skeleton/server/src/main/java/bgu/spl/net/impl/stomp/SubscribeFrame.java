@@ -7,7 +7,7 @@ public class SubscribeFrame extends StompFrame{
 
     public SubscribeFrame(String destination,String id)
     {
-        super("SUBSCRIBE",  null);
+        super("SUBSCRIBE");
         this.destination=destination;
         this.id=id;
     }

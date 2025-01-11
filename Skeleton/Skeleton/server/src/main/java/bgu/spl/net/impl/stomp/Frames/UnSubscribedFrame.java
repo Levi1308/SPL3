@@ -1,4 +1,4 @@
-package bgu.spl.net.impl.stomp.StompFrame;
+package bgu.spl.net.impl.stomp.Frames;
 
 public class UnSubscribedFrame extends StompFrame{
 

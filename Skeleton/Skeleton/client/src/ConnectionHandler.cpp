@@ -105,4 +105,14 @@ void ConnectionHandler::close() {
 	} catch (...) {
 		std::cout << "closing failed: connection already closed" << std::endl;
 	}
+	/*
+	ConnectionHandler& ConnectionHandler::operator=(const ConnectionHandler& other){
+		if(this!=&other)
+		{
+			port_=other.port_;
+
+		}
+		return this;
+	}
+	*/
 }

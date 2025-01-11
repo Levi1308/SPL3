@@ -5,7 +5,7 @@ public class ErrorFrame extends StompFrame{
     String receiptId;
 
     public ErrorFrame(String message,String receiptId,String body){
-        super("ERROR", body);
+        super("ERROR");
             this.message=message;
             this.receiptId=receiptId;
     }

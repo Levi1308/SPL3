@@ -4,7 +4,7 @@ public class RecieptFrame extends StompFrame{
     String versionId;
     public RecieptFrame(String version)
     {
-        super("RECIEPT",null);
+        super("RECIEPT");
         this.versionId=version;
     }
     public String getVersionId(){

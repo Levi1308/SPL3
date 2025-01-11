@@ -6,7 +6,7 @@ public class MessageFrame extends StompFrame {
     private String messageId; // A server-unique ID for the message
 
     public MessageFrame(String subscription, String destination, String messageId, String body) {
-        super("MESSAGE", body);
+        super("MESSAGE");
         this.subscription = subscription;
         this.destination = destination;
         this.messageId = messageId;
