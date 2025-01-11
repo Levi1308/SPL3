@@ -133,15 +133,13 @@ public class ConnectionsImpl<T> implements Connections<T> {
     }
 
     public ConnectionHandler<T> getConnection(int connectionID) {
-        return activeClients.get(connectionID);
+        return activeClients.getOrDefault(connectionID,null);
     }
 
     public void removeConnection(int connectionID) {
         activeClients.remove(connectionID);
     }
-    
-
-    
+        
     
 }
 
