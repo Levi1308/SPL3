@@ -1,56 +1,81 @@
 #include "StompProtocol.h"
+#include "../include/event.h"
 #include <iostream>
 #include <sstream>  // For stringstream operations
 
-// Constructor to initialize member variables
-StompProtocol::StompProtocol() : shouldTerminate(false), messageID(0), 
-connectionID(0),connection("example",(short)1) {
 
+StompProtocol::StompProtocol(ConnectionHandler& connection) : connection(connection), terminateKeyboard(false), terminateServerResponses(false)
+{
 }
 
-// Start method to set connectionID and initialize connection
-void StompProtocol::start(int connectionId, ConnectionHandler connection) {
-    connectionID = connectionId;   // Set the connection ID
-    this->connection = connection;  // Set the connection handler
-    shouldTerminate = false;        // Reset termination flag on start
-}
+void StompProtocol::server_response_process()
+{
+    while (!terminateServerResponses) {
+        std::string answer;
+        bool hasAnswered = connection.getLine(answer); //Receiving a response from the server
+        if (!hasAnswered) { //If the server connection was closed and no response receieved - close the client
+            std::cout << "Disconnected. Exiting...\n" << std::endl;
+            terminateKeyboard = true;
+            break;
+        }
+        if(hasAnswered) { //If a response from the server received
+           // StompFrame frame(answer);
+            cout << answer;
 
-
-void StompProtocol::process(std::string message) {
-   
-}
-
-// Method to check if the protocol should terminate
-bool StompProtocol::connectionShouldTerminate() {
-    return shouldTerminate;  // Return the termination status
-}
-
-
-std::map<std::string, std::string> StompProtocol::parseStompMessage(const std::vector<std::string>& lines) {
-    // Initialize a map to store headers
-    std::map<std::string, std::string> headers;
-
-    // Loop through lines (skip the first line as it's the command)
-    for (size_t i = 1; i < lines.size() && !lines[i].empty(); ++i) {
-        std::string line = lines[i];
-        // Trim whitespace from the line
-        line.erase(0, line.find_first_not_of(" \t\n\r"));  // Remove leading whitespace
-        line.erase(line.find_last_not_of(" \t\n\r") + 1);  // Remove trailing whitespace
-
-        // Split the line at the first colon (":")
-        size_t pos = line.find(":");
-        if (pos != std::string::npos) {
-            std::string headerName = line.substr(0, pos);
-            std::string headerValue = line.substr(pos + 1);
-
-            // Trim headerName and headerValue
-            headerName.erase(headerName.find_last_not_of(" \t\n\r") + 1);  // Remove trailing whitespace
-            headerValue.erase(headerValue.find_first_not_of(" \t\n\r"));  // Remove leading whitespace
-
-            // Insert into the map
-            headers[headerName] = headerValue;
+            if (frame.getCommand() == "RECEIPT") {
+                map<string, string> headers = frame.getHeaders();
+                string receiptID = headers.find("receipt-id")->second;
+                string receiptCOMMAND = connection.findReceiptCommand(receiptID);
+                if (receiptCOMMAND == "DISCONNECT") { //If the receipt received is for a DISCONNECT frame - close the connection
+                    cout << "bye bye" << endl;
+                    terminateServerResponses = true;
+                    connection.close();
+                }
+            }
+            else if (frame.getCommand() == "ERROR") {
+                terminateKeyboard = true;
+                terminateServerResponses = true;
+            }
+            else if (frame.getCommand() == "MESSAGE") { //If a message was received - a user sent a report and it needed to be saved
+                string report = frame.getBody();
+                vector<string> lines = split(report, '\n');
+                string userLine = lines[0];
+                int index = userLine.find(':') + 1;
+                string user = userLine.substr(index);
+                Event object = parseEventReport(report);
+                string channel_name = object.get_channel_name();
+                connection.addReport(user, channel_name, object);
+            }
         }
     }
+}
 
-    return headers;
+vector<string> StompProtocol::split(string line, char delimiter)
+{
+    vector<string> parts;
+    while (line.size() > 0)
+    {
+        string part = "";
+        std::size_t i = 0;
+        for (i = 0; i < line.size(); i++)
+        {
+            if (delimiter == line[i])
+            {
+                if (part.size() > 0)
+                    parts.push_back(part);
+                break;
+            }
+            else
+                part += line[i];
+        }
+        if (i == line.size())
+        {
+            parts.push_back(part);
+            line = "";
+        }
+        else
+            line = line.substr(i + 1);
+    }
+    return parts;
+
 }
