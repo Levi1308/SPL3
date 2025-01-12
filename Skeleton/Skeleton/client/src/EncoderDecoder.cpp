@@ -5,8 +5,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <cstddef> 
-
+#include <cstddef>  // For std::byte
 class EncoderDecoder {
 private:
     std::vector<std::byte> bytes; // Dynamic byte array

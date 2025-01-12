@@ -3,7 +3,8 @@
 #include <sstream>  // For stringstream operations
 
 // Constructor to initialize member variables
-StompProtocol::StompProtocol() : shouldTerminate(false), messageID(0), connectionID(0),connection("example",(short)1) {
+StompProtocol::StompProtocol() : shouldTerminate(false), messageID(0), 
+connectionID(0),connection("example",(short)1) {
 
 }
 

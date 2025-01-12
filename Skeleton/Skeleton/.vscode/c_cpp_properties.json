@@ -3,10 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${workspaceFolder}/**",
-                "${workspaceFolder}/client/include/",
-                "C:/Users/shahaf/Downloads/boost_1_87_0/boost_1_87_0"
-
+                "${workspaceFolder}/**"
             ],
             "defines": [
                 "_DEBUG",
