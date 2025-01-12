@@ -3,8 +3,14 @@
 #include <string>
 #include <iostream>
 #include <boost/asio.hpp>
+#include <map>
+#include <list>
 
 using boost::asio::ip::tcp;
+using namespace std;
+
+class Event;
+class Channel;
 
 class ConnectionHandler {
 private:
@@ -12,8 +18,29 @@ private:
 	const short port_;
 	boost::asio::io_service io_service_;   // Provides core I/O functionality
 	tcp::socket socket_;
+	map<string,Channel> channels;
+	string currentUser;
+	bool logined; //Does the connection logined to a specific user
+	int receiptNumber; //Generator of receipt numbers
+	map<string, string> receipts; 
+	map<string, int> subscriptions;
+	
+	
 
 public:
+    void connectUser(string user);
+	void resetConnection(); //Disconnect the client from the user (update relevant data)
+	string getLoginedUser(); //Get the logined user's name
+	bool isLogined();
+	int produceReceipt(string command); //generate the next receipt number
+	int insertSub(string channel);
+	int getSubID(string channel);
+	string findReceiptCommand(string receiptID);
+	void addReport(string user, string channel_name, Event report);
+
+
+
+
 	ConnectionHandler(std::string host, short port);
 
 	virtual ~ConnectionHandler();
