@@ -75,4 +75,6 @@ public:
 	// Close down the connection properly.
 	void close();
 
+	ConnectionHandler& operator=(const ConnectionHandler& other);
+
 }; //class ConnectionHandler
