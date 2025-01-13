@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <sstream>
 #include "ConnectionHandler.h"
+#include <fstream>  // For std::ifstream
 
 
 // Function to split a string by a delimiter
@@ -15,7 +16,6 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     while (std::getline(stream, token, delimiter)) {
         tokens.push_back(token); // Add each token to the vector
     }
-
     return tokens;
 }
 
@@ -63,10 +63,48 @@ ConnectionHandler* Login() {
 }
 
 
+namespace Auxiliary {
+    // Function to split a line into arguments (example implementation)
+    std::vector<std::string> parseArguments(const std::string& line) {
+        std::vector<std::string> args;
+        std::istringstream iss(line);
+        std::string arg;
+        while (iss >> arg) {
+            args.push_back(arg);
+        }
+        return args;
+    }
+}
+
+void FileReaderJson(const std::string& configFilePath) {
+    try {
+        // Open the config file
+        std::ifstream configFile(configFilePath);
+        if (!configFile.is_open()) {
+            throw std::runtime_error("Failed to open config file: " + configFilePath);
+        }
+        std::string line;
+    while (std::getline(configFile, line)) {
+        std::vector<std::string> args = Auxiliary::parseArguments(line);
+        if (args.empty() || args[0][0] == '#') {
+            continue; 
+        }
+        std::cout<<line<<std::endl;
+        
+    }
+    configFile.close();
+    }
+    catch (const std::exception& e) {
+        // Handle any exceptions that occur during file I/O or JSON parsing
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
+}
+
 int main() {
     std::string line;
     std::cout << "Enter commands (type 'exit_program' to stop):" << std::endl;
-    ConnectionHandler* logged=Login();
+    FileReaderJson("Skeleton/Skeleton/client/data/events1.json");
+    //ConnectionHandler* logged=Login();
 
     std::cout << "Exiting program." << std::endl;
     return 0;
