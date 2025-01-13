@@ -1,4 +1,5 @@
-
+#include <unordered_map>
+#include <string>
 #include "ConnectionHandler.h"
 // Enum for commands
 enum class Command {
@@ -12,9 +13,13 @@ enum class Command {
 
 class InputStream {
 private:
-    int subscribeCounter;
+    int departmentCounter;
+    int recieptId;
+    std::unordered_map<std::string,int> departments;
 public:
-    InputStream(){};
+    InputStream();
     void operator()(ConnectionHandler connection); 
-    void IncreamentSubscribers();
+    void IncreamentDepartments();
+    void IncreamentRecieptId();
+    void FileReaderJson(const std::string& configFilePath) ;
 };

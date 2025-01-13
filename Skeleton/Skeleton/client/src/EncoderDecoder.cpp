@@ -1,25 +1,21 @@
-
-
-#include "EncoderDecoder.h"
-
+#include <vector>
 #include <string>
 #include <iostream>
-#include <vector>
-#include <cstddef>  // For std::byte
+
 class EncoderDecoder {
 private:
-    std::vector<std::byte> bytes; // Dynamic byte array
-    int len = 0;                  // Current length
+    std::vector<unsigned char> bytes; // Dynamic byte array (using unsigned char)
+    int len = 0;                      // Current length
 
 public:
     EncoderDecoder() {}
 
     // Decodes the next byte, returning a string when '\n' is encountered
-    std::string decodeNextByte(std::byte nextByte) {
-        if (nextByte == std::byte{'\n'}) {
+    std::string decodeNextByte(unsigned char nextByte) {
+        if (nextByte == '\n') {
             std::string ret(bytes.begin(), bytes.end());
-            bytes.clear(); 
-            len = 0;       
+            bytes.clear();
+            len = 0;
             return ret;
         }
 
@@ -28,12 +24,11 @@ public:
         return ""; 
     }
 
-    std::vector<std::byte> encode(std::string message){
-    std::vector<std::byte> bytes;
-    for (char c : message) {
-        bytes.push_back(static_cast<std::byte>(c));
-    }
-    return bytes;
+    std::vector<unsigned char> encode(std::string message) {
+        std::vector<unsigned char> bytes;
+        for (char c : message) {
+            bytes.push_back(static_cast<unsigned char>(c)); // Convert to unsigned char
+        }
+        return bytes;
     }
 };
-

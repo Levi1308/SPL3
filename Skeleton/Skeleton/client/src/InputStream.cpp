@@ -6,9 +6,15 @@
 #include <unordered_map>
 #include <sstream>
 #include "ConnectionHandler.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <json.hpp> 
 
-InputStream::InputStream():subscribeCounter(0){};
 
+InputStream::InputStream()
+:departmentCounter(0),recieptId(0){};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {
@@ -63,12 +69,18 @@ void InputStream::operator()(ConnectionHandler connection){
                         std::string channel_name = input[1];
                         std::string message = "SUBSCRIBE\n"
                           "destination:" + channel_name + "\n"
-                          "id:" + std::to_string(subscribeCounter);
-
+                          "id:" + std::to_string(departmentCounter)+"\n"
+                          "reciept:"+std::to_string(recieptId);
                         // Send the subscription message
                         if (!connection.sendLine(message)) {
-                            std::cerr << "Failed to send subscription message for channel: " << channel_name << std::endl;
+                            std::cerr << "Failed to send subscription message for channel:" << channel_name << std::endl;
                             continue;
+                        }
+                        else
+                        {
+                            departments.insert(std::make_pair(channel_name, departmentCounter));
+                            IncreamentDepartments();
+                            IncreamentRecieptId();
                         }
                     }
                     break;
@@ -78,7 +90,18 @@ void InputStream::operator()(ConnectionHandler connection){
                         std::cout << "Error: exit requires a channel name." << std::endl;
                     } else {
                         std::string channel_name = input[1];
-                        std::cout << "Exiting channel: " << channel_name << std::endl;
+                        int departmentId;
+                        auto it = departments.find(channel_name);  // Find the key
+                        if (it != departments.end()) {
+                            departmentId = it->second;  // Access the value
+                            std::cout << "Department ID: " << departmentId << std::endl;
+                        } else {
+                            std::cout << "Department not found!" << std::endl;
+                            break;
+                        }
+                        std::string message="UNSUBSCRIBE\n"
+                        "id:" + std::to_string(departmentId) + "\n"
+                        "reciept"+std::to_string(recieptId);
                     }
                     break;
 
@@ -87,7 +110,7 @@ void InputStream::operator()(ConnectionHandler connection){
                         std::cout << "Error: report requires a file path." << std::endl;
                     } else {
                         std::string file_path = input[1];
-                        std::cout << "Generating report for file: " << file_path << std::endl;
+                                                
                     }
                     break;
 
@@ -113,6 +136,48 @@ void InputStream::operator()(ConnectionHandler connection){
     }
     
 }
-void InputStream::IncreamentSubscribers(){
-        subscribeCounter++;
+void InputStream::IncreamentDepartments(){
+        departmentCounter++;
+}
+void InputStream::IncreamentRecieptId(){
+        recieptId++;
+}
+
+void FileReaderJson(const std::string& configFilePath) {
+    try {
+        // Open the config file
+        std::ifstream configFile(configFilePath);
+        if (!configFile.is_open()) {
+            throw std::runtime_error("Failed to open config file: " + configFilePath);
+        }
+
+        std::string line;
+        std::ostringstream jsonBuffer;
+
+        // Read the file line by line
+        while (std::getline(configFile, line)) {
+            // Parse arguments from the line
+            std::vector<std::string> args = split(line,' ');
+
+            // Skip empty lines or lines starting with a comment (`#`)
+            if (args.empty() || args[0][0] == '#') {
+                continue;
+            }
+
+            // Accumulate valid lines in a buffer
+            jsonBuffer << line << "\n";
+        }
+
+        configFile.close(); // Close the file
+
+        // Parse the accumulated buffer as JSON
+        nlohmann::json jsonData = nlohmann::json::parse(jsonBuffer.str());
+
+        // Print or process the JSON data
+        std::cout << "Parsed JSON Data:\n" << jsonData.dump(4) << std::endl; // Pretty-print JSON
+    }
+    catch (const std::exception& e) {
+        // Handle any exceptions that occur during file I/O or JSON parsing
+        std::cerr << "Error: " << e.what() << std::endl;
+    }
 }
