@@ -14,13 +14,13 @@ class StompProtocol
 private:
     bool terminateKeyboard;          
     bool terminateServerResponses;
-    ConnectionHandler &connection;  
+    ConnectionHandler *connection;  
 
 
 
 public:
-    StompProtocol(ConnectionHandler& connection);
-    void server_response_process();
+    StompProtocol(ConnectionHandler* connection);
+    void operator()();
     vector<string> static split(string line, char delimiter);
     Event parseEventReport(string report);
 };

@@ -21,7 +21,7 @@ private:
     std::string currentClient;
 public:
     InputStream();
-    void operator()(ConnectionHandler connection); 
+    void run(ConnectionHandler connection); 
     void IncreamentRecieptId();
     void writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events);
 };
