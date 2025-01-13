@@ -7,8 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <cstring>
-
-//#include "../include/keyboardInput.h"
+#include "keyboardInput.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -68,6 +67,7 @@ Event::Event(const std::string &frame_body): channel_name(""), city(""),
                                              eventOwnerUser("")
 {
     stringstream ss(frame_body);
+    keyboardInput keyboard;
     string line;
     string eventDescription;
     map<string, string> general_information_from_string;
@@ -75,7 +75,7 @@ Event::Event(const std::string &frame_body): channel_name(""), city(""),
     while(getline(ss,line,'\n')){
         vector<string> lineArgs;
         if(line.find(':') != string::npos) {
-            split_str(line, ':', lineArgs);
+            lineArgs=keyboard.split_str(line, ':');
             string key = lineArgs.at(0);
             string val;
             if(lineArgs.size() == 2) {

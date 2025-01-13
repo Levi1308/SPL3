@@ -69,7 +69,8 @@
         "random": "cpp",
         "ranges": "cpp",
         "stop_token": "cpp",
-        "cinttypes": "cpp"
+        "cinttypes": "cpp",
+        "*.ipp": "cpp"
     },
     "makefile.makefilePath": "client/"
 }
