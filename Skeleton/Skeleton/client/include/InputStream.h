@@ -1,6 +1,8 @@
 #include <unordered_map>
 #include <string>
+#include <map>
 #include "ConnectionHandler.h"
+#include "Channel.h"
 // Enum for commands
 enum class Command {
     LOGIN,
@@ -8,18 +10,18 @@ enum class Command {
     EXIT,
     REPORT,
     SUMMARY,
-    UNKNOWN
+    UNKNOWN,
+    LOGOUT
 };
 
 class InputStream {
 private:
-    int departmentCounter;
     int recieptId;
-    std::unordered_map<std::string,int> departments;
+    std::map<std::string,Channel> channels;
+    std::string currentClient;
 public:
     InputStream();
     void operator()(ConnectionHandler connection); 
-    void IncreamentDepartments();
     void IncreamentRecieptId();
-    void FileReaderJson(const std::string& configFilePath) ;
+    void writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events);
 };

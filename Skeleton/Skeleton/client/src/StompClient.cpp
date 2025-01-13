@@ -10,7 +10,7 @@
 ConnectionHandler* Login() {
     std::string line;
     ConnectionHandler* connection = nullptr;
-    KeyboardInput keyboard;
+    keyboardInput keyboard;
     while (connection == nullptr) {
         std::cout << "Enter login command (e.g., 'login hostname:port'):\n";
         std::getline(std::cin, line);

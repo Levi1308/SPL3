@@ -5,7 +5,9 @@
 #include <vector>
 #include <sstream>
 
-static std::vector<std::string> split(const std::string& str, char delimiter) {
+
+
+static std::vector<std::string> split_str(const std::string& str, char delimiter) {
     std::vector<std::string> tokens;
     std::stringstream ss(str); // Create a stringstream from the input string
     std::string token;

@@ -14,11 +14,13 @@
 #include "event.h"
 #include "keyboardInput.h"
 InputStream::InputStream()
-    : departmentCounter(0), recieptId(0), currentClient("") {};
+    : recieptId(0), currentClient("") {};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {
     {"login", Command::LOGIN},
+    {"logout",
+     Command::LOGOUT},
     {"join", Command::JOIN},
     {"exit", Command::EXIT},
     {"report", Command::REPORT},
@@ -66,23 +68,21 @@ void InputStream::operator()(ConnectionHandler connection)
                 else
                 {
                     std::string channel_name = input[1];
-                    std::string message = "SUBSCRIBE\n"
-                                          "destination:" +
-                                          channel_name + "\n"
-                                                         "id:" +
-                                          std::to_string(departmentCounter) + "\n"
-                                                                              "reciept:" +
-                                          std::to_string(recieptId)+"\0";
+                    std::string message_join = "SUBSCRIBE\n"
+                                               "destination:" +
+                                               channel_name + "\n"
+                                                              "id:" +
+                                               std::to_string(channels.size()) + "\n"
+                                                                                 "reciept:" +
+                                               std::to_string(recieptId) + "\0";
                     // Send the subscription message
-                    if (!connection.sendLine(message))
+                    if (!connection.sendLine(message_join))
                     {
                         std::cerr << "Failed to send subscription message for channel:" << channel_name << std::endl;
                         continue;
                     }
                     else
                     {
-                        departments.insert(std::make_pair(channel_name, departmentCounter));
-                        IncreamentDepartments();
                         IncreamentRecieptId();
                     }
                 }
@@ -95,6 +95,7 @@ void InputStream::operator()(ConnectionHandler connection)
                 }
                 else
                 {
+                    /*
                     std::string channel_name = input[1];
                     int departmentId;
                     auto it = departments.find(channel_name); // Find the key
@@ -112,86 +113,155 @@ void InputStream::operator()(ConnectionHandler connection)
                                           "id:" +
                                           std::to_string(departmentId) + "\n"
                                                                          "reciept" +
-                                          std::to_string(recieptId)+"\0";
+                                          std::to_string(recieptId) + "\0";*/
                 }
-                break;
+                    break;
 
-            case Command::REPORT:
-                if (input.size() < 2)
-                {
-                    std::cout << "Error: report requires a file path." << std::endl;
-                }
-                else
-                {
-                    std::string file_path = input[1];
-                    // Parse the events file
-                    names_and_events parsedData = parseEventsFile(file_path);
-                    // Extract channel name and events
-                    std::string channelName = parsedData.channel_name;
-                    std::vector<Event> events = parsedData.events;
-                    for (Event e : events)
+                case Command::REPORT:
+                    if (input.size() < 2)
                     {
-                        std::string message = "SEND\n\n"
-                                              "user" +
-                                              currentClient + "\n"
-                                                              "city" +
-                                              e.get_city() + "\n"
-                                                             "event name:" +
-                                              e.get_name() + "\n"
-                                                             "date time:" +
-                                              std::to_string(e.get_date_time()) + "\n"
-                                                                                  "general information\n";
-                        const auto &general_info = e.get_general_information();
-
-                        // Check and append the "active" key
-                        auto it = general_info.find("active");
-                        if (it != general_info.end())
-                        {
-                            message += "\tactive: " + it->second + "\n";
-                        }
-
-                        // Check and append the "forces_arrival_at_scene" key
-                        it = general_info.find("forces_arrival_at_scene");
-                        if (it != general_info.end())
-                        {
-                            message += "\tforces_arrival_at_scene: " + it->second + "\n";
-                        }
-                        message+="description:\n"+e.get_description()+"\0";
-                        
+                        std::cout << "Error: report requires a file path." << std::endl;
                     }
-                }
-                break;
+                    else
+                    {
+                        std::string file_path = input[1];
+                        // Parse the events file
+                        names_and_events parsedData = parseEventsFile(file_path);
+                        // Extract channel name and events
+                        std::string channelName = parsedData.channel_name;
+                        std::vector<Event> events = parsedData.events;
+                        for (Event e : events)
+                        {
+                            std::string message_report = "SEND\n\n"
+                                                         "user" +
+                                                         currentClient + "\n"
+                                                                         "city" +
+                                                         e.get_city() + "\n"
+                                                                        "event name:" +
+                                                         e.get_name() + "\n"
+                                                                        "date time:" +
+                                                         std::to_string(e.get_date_time()) + "\n"
+                                                                                             "general information\n";
+                            const auto &general_info = e.get_general_information();
 
-            case Command::SUMMARY:
-                if (input.size() < 4)
-                {
-                    std::cout << "Error: summary requires channel name, user, and file path." << std::endl;
-                }
-                else
-                {
-                    std::string channel_name = input[1];
-                    std::string user = input[2];
-                    std::string file_path = input[3];
-                    std::cout << "Generating summary for channel: " << channel_name
-                              << ", user: " << user
-                              << ", file: " << file_path << std::endl;
-                }
-                break;
+                            // Check and append the "active" key
+                            auto it = general_info.find("active");
+                            if (it != general_info.end())
+                            {
+                                message_report += "\tactive: " + it->second + "\n";
+                            }
 
-            case Command::UNKNOWN:
-            default:
-                std::cout << "Unknown command: " << input[0] << std::endl;
-                break;
+                            // Check and append the "forces_arrival_at_scene" key
+                            it = general_info.find("forces_arrival_at_scene");
+                            if (it != general_info.end())
+                            {
+                                message_report += "\tforces_arrival_at_scene: " + it->second + "\n";
+                            }
+                            message_report += "description:\n" + e.get_description() + "\0";
+                            connection.sendLine(message_report);
+                        }
+                    }
+                    break;
+
+                case Command::SUMMARY:
+                    if (input.size() < 4)
+                    {
+                        std::cout << "Error: summary requires channel name, user, and file path." << std::endl;
+                    }
+                    else
+                    {
+                        std::string channel_name = input[1];
+                        std::string user = input[2];
+                        std::string file_path = input[3];
+                        auto it = channels.find(channel_name);
+                        if (it != channels.end())
+                        {
+                            Channel temp = it->second; // Assuming channels is a map with channel_name as the key
+
+                            // Retrieve events by the user
+                            std::vector<Event> events = temp.getEvents_ByUser(user);
+
+                            // Now you can process the events or write them to a file
+                            writeToFile(file_path, channel_name, events); // Assuming `writeToFile` is implemented as above
+                        }
+                        else
+                        {
+                            std::cerr << "Channel not found: " << channel_name << std::endl;
+                        }
+                    }
+                    break;
+                case Command::LOGOUT:
+                    std::string message_logout = "DISCONNECT\n"
+                                                 "reciept:" +
+                                                 std::to_string(recieptId) + "\n";
+                    if (connection.sendLine(message_logout))
+                    {
+                        IncreamentRecieptId();
+                    }
+                    break;
+                case Command::UNKNOWN:
+                    std::cout << "Unknown command: " << input[0] << std::endl;
+                    break;
+                }
             }
         }
     }
-}
-void InputStream::IncreamentDepartments()
-{
-    departmentCounter++;
-}
+
 void InputStream::IncreamentRecieptId()
 {
     recieptId++;
 }
 
+void InputStream::writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events)
+{
+    std::ofstream file(file_path);
+
+    if (!file.is_open())
+    {
+        std::cerr << "Failed to open file: " << file_path << std::endl;
+        return;
+    }
+
+    // Header
+    file << "Channel < " << channel_name << " >\n";
+
+    // Calculate statistics
+    int total_reports = events.size();
+    int active_count = 0;
+    int forces_arrival_count = 0;
+
+    for (Event event : events)
+    {
+        if (event.get_general_information().count("active") && event.get_general_information().at("active") == "true")
+        {
+            active_count++;
+        }
+        if (event.get_general_information().count("forces_arrival_at_scene") &&
+            event.get_general_information().at("forces_arrival_at_scene") == "true")
+        {
+            forces_arrival_count++;
+        }
+    }
+
+    // Write statistics
+
+    file << "Stats:\n";
+    file << "Total : " << total_reports << "\n";
+    file << "active : " << active_count << "\n";
+    file << "forces arrival at scene : " << forces_arrival_count << "\n";
+
+    // Event Reports
+    file << "Event Reports:\n";
+    int report_number = 1;
+    for (Event event : events)
+    {
+        file << "Report_" << report_number++ << ":\n";
+        file << "\tcity : " << event.get_city() << "\n";
+        file << "\tdate time : " << std::to_string(event.get_date_time()) << "\n";
+        file << "\tevent name : " << event.get_name() << "\n";
+        file << "\tsummary : " << event.get_description().substr(0, 100) << "...\n"; // Truncate description for summary
+    }
+
+    file.close();
+    std::cout << "File written successfully to: " << file_path << std::endl;
+}

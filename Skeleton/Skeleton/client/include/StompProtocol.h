@@ -1,8 +1,14 @@
 #pragma once
 
 #include "ConnectionHandler.h"
+#include "StompFrame.h"
 #include <string>
 #include <map>
+#include <fstream>
+#include <iostream>
+
+class Event;
+
 class StompProtocol
 {
 private:

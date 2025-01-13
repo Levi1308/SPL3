@@ -4,7 +4,7 @@
 #include <sstream>  // For stringstream operations
 
 
-StompProtocol::StompProtocol(ConnectionHandler& connection) : connection(connection), terminateKeyboard(false), terminateServerResponses(false)
+StompProtocol::StompProtocol(ConnectionHandler& connection) : terminateKeyboard(false), terminateServerResponses(false),connection(connection)
 {
 }
 
@@ -19,7 +19,7 @@ void StompProtocol::server_response_process()
             break;
         }
         if(hasAnswered) { //If a response from the server received
-           // StompFrame frame(answer);
+            StompFrame frame(answer);
             cout << answer;
 
             if (frame.getCommand() == "RECEIPT") {
