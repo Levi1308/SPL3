@@ -1,4 +1,6 @@
 #include "../include/ConnectionHandler.h"
+#include "../include/event.h"
+#include "../include/Channel.h"
 
 using boost::asio::ip::tcp;
 
@@ -9,7 +11,9 @@ using std::endl;
 using std::string;
 
 ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
-                                                                socket_(io_service_) {}
+                                                                socket_(io_service_),channels(),  currentUser(), logined(false),
+																 receiptNumber(0), receipts(), subscriptions() {}
+
 
 ConnectionHandler::~ConnectionHandler() {
 	close();
@@ -116,3 +120,73 @@ void ConnectionHandler::close() {
 	}
 	*/
 }
+
+void ConnectionHandler::connectUser(string user){
+	currentUser = user;
+	logined = true;
+}
+
+void ConnectionHandler::resetConnection()
+{
+	currentUser = "";
+	receiptNumber = 0;
+	subscriptions.clear();
+	receipts.clear();
+	channels.clear();
+	logined = false;
+}
+
+string ConnectionHandler::getLoginedUser()
+{
+	return currentUser;
+}
+
+bool ConnectionHandler::isLogined()
+{
+	return this->logined;
+}
+
+string ConnectionHandler::findReceiptCommand(string receiptID) {
+	return receipts.find(receiptID)->second;
+}
+
+int ConnectionHandler::getSubID(string channel) {
+	if (subscriptions.find(channel) != subscriptions.end()) {
+		return subscriptions.find(channel)->second;
+	}
+	else {
+		return -1;
+	}
+}
+
+int ConnectionHandler::insertSub(string channel) {
+	int subID;
+	if (subscriptions.empty()) {
+		subID = 0;
+	}
+	else {
+		subID = subscriptions.size();
+	}
+	subscriptions.insert({channel, subID});
+	return subID;
+}
+
+int ConnectionHandler::produceReceipt(string command) {
+	int receipt = receiptNumber;
+	receiptNumber++;
+	receipts.insert({to_string(receipt), command});
+	return receipt;
+}
+
+void ConnectionHandler::addReport(string user, string channel_name, Event report){
+	if (channels.find(channel_name) == channels.end()) {
+		Channel channel(channel_name);
+		channel.addEvent(user, report);
+		channels.insert({ channel_name, channel });
+	}
+	else {
+		channels.find(channel_name)->second.addEvent(user, report);
+	}
+}
+
+
