@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConnectionHandler.h"
+#include "../include/StompFrame.h"
 #include <string>
 #include <map>
 class StompProtocol

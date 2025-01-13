@@ -19,7 +19,7 @@ void StompProtocol::server_response_process()
             break;
         }
         if(hasAnswered) { //If a response from the server received
-           // StompFrame frame(answer);
+            StompFrame frame(answer);
             cout << answer;
 
             if (frame.getCommand() == "RECEIPT") {
