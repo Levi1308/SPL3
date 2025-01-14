@@ -24,7 +24,7 @@ private:
 	int receiptNumber; //Generator of receipt numbers
 	map<string, string> receipts; 
 	map<string, int> subscriptions;
-	
+	int clientId;
 	
 
 public:
@@ -37,7 +37,7 @@ public:
 	int getSubID(string channel);
 	string findReceiptCommand(string receiptID);
 	void addReport(string user, string channel_name, Event report);
-
+	void setClientId(int id);
 
 
 

@@ -5,15 +5,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class StompFrame {
+public class StompFrame<T> {
     private String STOMPCommand; // MESSAGE / SEND / CONNECT / DISCONNECT / SUBSCRIBE / UNSUBSCRIBE
     private Map<String, String> headers;
     private String body;
 
 
-    StompFrame(String frame) { //Creating a frame object using a frame string
+    StompFrame(T frame) { //Creating a frame object using a frame string
         headers = new HashMap<>();
-        List<String> frameLines = split(frame, '\n');
+        List<String> frameLines = split(frame.toString(), '\n');
         STOMPCommand = frameLines.get(0);
         boolean hasBody = false;
         int bodyIndex = 0;

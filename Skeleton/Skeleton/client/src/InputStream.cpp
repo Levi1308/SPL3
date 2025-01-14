@@ -18,13 +18,12 @@
 
 
 InputStream::InputStream()
-    : recieptId(0), currentClient("") {};
+    : recieptId(0), currentClient(""),subscriptionId(0) {};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {
     {"login", Command::LOGIN},
-    {"logout",
-     Command::LOGOUT},
+    {"logout",Command::LOGOUT},
     {"join", Command::JOIN},
     {"exit", Command::EXIT},
     {"report", Command::REPORT},
@@ -75,7 +74,7 @@ void InputStream::run(ConnectionHandler& connection)
                                                "destination:" +
                                                channel_name + "\n"
                                                               "id:" +
-                                               std::to_string(channels.size()) + "\n"
+                                               std::to_string(subscriptionId) + "\n"
                                                                                  "reciept:" +
                                                std::to_string(recieptId);
                     // Send the subscription message
@@ -85,8 +84,12 @@ void InputStream::run(ConnectionHandler& connection)
                         continue;
                     }
                     else
-                    {
+                    {    
+                        Channel chan(channel_name);
+                        channels.insert(std::make_pair(channel_name,chan));
+                        subscriptions.insert(std::make_pair(channel_name,subscriptionId));
                         IncreamentRecieptId();
+                        IncreamentSubId();
                     }
                 }
             }
@@ -95,10 +98,46 @@ void InputStream::run(ConnectionHandler& connection)
                 if (input.size() < 2)
                 {
                     std::cout << "Error: exit requires a channel name." << std::endl;
+                    break;
                 }
                 else
                 {
-                    // Code for EXIT command (commented in your original code)
+                    std::string channel_name = input[1];
+                    std::string departmentName;
+                    int subId;
+                    auto it1 =channels.find(channel_name); // Find the key
+                    auto it2 =subscriptions.find(channel_name);
+                    if (it1 != channels.end()&&it2!=subscriptions.end())
+                    {
+                        Channel channel=it1->second;
+                        subId=it2->second;
+                        departmentName = channel.get_name(); // Access the value
+                        std::cout << "Department ID: " << departmentName << std::endl;
+                        std::string message_exit = "UNSUBSCRIBE\n"
+                                          "id:" +
+                                          std::to_string(subId) + "\n"
+                                                                         "reciept" +
+                                          std::to_string(recieptId) + "\0";
+                    // Send the subscription message
+                    if (!connection.sendLine(message_exit))
+                    {
+                        std::cerr << "Failed to send unsubscription message for channel:" << channel_name << std::endl;
+                        break;
+                    }
+                    else
+                    {    
+                        channels.erase(channel_name);
+                        IncreamentRecieptId();
+                        //IncreamentSubId();
+                        break;
+                    }
+                    }
+                    else
+                    {
+                        std::cout << "Department not found!" << std::endl;
+                        break;
+                    }
+                    
                 }
             }
             else if (command == Command::REPORT)
@@ -115,6 +154,10 @@ void InputStream::run(ConnectionHandler& connection)
                     // Extract channel name and events
                     std::string channelName = parsedData.channel_name;
                     std::vector<Event> events = parsedData.events;
+                    auto it =channels.find(channelName); // Find the key
+                    if (it != channels.end())
+                    {
+                    Channel channel=it->second;
                     for (Event e : events)
                     {
                         std::string message_report = "SEND\n\n"
@@ -143,9 +186,16 @@ void InputStream::run(ConnectionHandler& connection)
                             message_report += "\tforces_arrival_at_scene: " + it->second + "\n";
                         }
                         message_report += "description:\n" + e.get_description();
-                        connection.sendLine(message_report);
+                        channel.addEvent(e.get_name(),e);
+                        if(!connection.sendLine(message_report))
+                        {
+                        std::cerr << "Failed to send unsubscription message for channel:" << channelName << std::endl;
+                        break;
+                    }
+                    else{}
                     }
                 }
+            }
             }
             else if (command == Command::SUMMARY)
             {
@@ -202,7 +252,9 @@ void InputStream::IncreamentRecieptId()
 {
     recieptId++;
 }
-
+void InputStream::IncreamentSubId(){
+    subscriptionId++;
+}
 void InputStream::writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events)
 {
     std::ofstream file(file_path);

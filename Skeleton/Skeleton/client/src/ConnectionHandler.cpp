@@ -189,4 +189,9 @@ void ConnectionHandler::addReport(string user, string channel_name, Event report
 	}
 }
 
+void ConnectionHandler::setClientId(int id){
+	clientId=id;
+}
+
+
 
