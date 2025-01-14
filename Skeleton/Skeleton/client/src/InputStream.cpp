@@ -14,7 +14,7 @@
 #include "event.h"
 #include "keyboardInput.h"
 InputStream::InputStream()
-    : recieptId(0), currentClient(connection) {};
+    : recieptId(0), currentClient("") {};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {
@@ -37,7 +37,7 @@ Command getCommand(const std::string &cmdStr)
     return Command::UNKNOWN;
 }
 
-void InputStream::operator()(ConnectionHandler connection)
+void InputStream::run(ConnectionHandler connection)
 {
     std::string line;
     keyboardInput keyboard;
