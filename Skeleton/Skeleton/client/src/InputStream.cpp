@@ -13,8 +13,8 @@
 #include <json.hpp>
 #include "event.h"
 #include "keyboardInput.h"
-InputStream::InputStream(ConnectionHandler connection)
-    : recieptId(0), currentClient(connection.) {};
+InputStream::InputStream()
+    : recieptId(0), currentClient(connection) {};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {

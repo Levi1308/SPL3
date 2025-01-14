@@ -19,7 +19,7 @@ private:
 
 
 public:
-    StompProtocol(ConnectionHandler* connection);
+    StompProtocol(ConnectionHandler& connection);
     void operator()();
     vector<string> static split(string line, char delimiter);
     Event parseEventReport(string report);

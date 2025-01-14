@@ -7,6 +7,9 @@
 #include "keyboardInput.h"
 #include "InputStream.h"
 #include "StompProtocol.h"
+#include <stdlib.h>
+#include <thread>
+
 
 
 void Login(ConnectionHandler &connection)
@@ -62,28 +65,34 @@ void Login(ConnectionHandler &connection)
     }
 }
 
-int main()
+int main (int argc, char *argv[])
 {
-    std::string line;
-    std::cout << "Enter commands (type 'exit_program' to stop):" << std::endl;
-
-    // Create a ConnectionHandler object
-    ConnectionHandler connection("", 0); // Temporary initialization; will be updated in Login
-    InputStream inputStream();
-    StompProtocol stompProtocol(connection);
-    Login(connection);
-
-    // Initialize InputStream and StompProtocol with connection
+    if (argc < 3) {
+        std::cerr << "Usage: " << argv[0] << " host port" << std::endl << std::endl;
+        return -1;
+    }
+    std::string host = argv[1];
+    short port = atoi(argv[2]);
     
+    
+    ConnectionHandler connectionHandler(host, port);
+    InputStream inputStream(connectionHandler);
 
-    // Create threads to run InputStream and StompProtocol tasks
-    std::thread th1(std::ref(inputStream)); // Start `task1` in thread `th1`
-    std::thread th2(std::ref(stompProtocol)); // Start `task2` in thread `th2`
+    if (!connectionHandler.connect()) {
+        std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
+        return 1;
+    }
 
-    // Wait for threads to complete
-    th1.join();
-    th2.join();
+    if(1)
+    {
+    StompProtocol protocol(connectionHandler);
+    thread keyboardThread(&std::ref(inputStream),&protocol); 
+    thread serverThread(&StompProtocol::server_response_process, &protocol);
 
+    serverThread.join();
+    keyboardThread.join();
+    
+    }
     std::cout << "Exiting program." << std::endl;
     return 0;
 }
