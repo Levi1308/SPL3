@@ -20,4 +20,5 @@ public:
     StompProtocol(ConnectionHandler& conn);
     void run();
     Event parseEventReport(string report);
+    vector<string> split(string line, char delimiter);
 };

@@ -19,7 +19,6 @@ class InputStream {
 private:
     int recieptId;
     std::map<std::string,Channel> channels;
-    std::string currentClient;
     int subscriptionId;
     std::map<std::string,int> subscriptions;
 

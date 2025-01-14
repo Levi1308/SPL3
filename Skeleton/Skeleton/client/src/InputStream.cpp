@@ -18,7 +18,7 @@
 
 
 InputStream::InputStream()
-    : recieptId(0), currentClient(""),subscriptionId(0) {};
+    : recieptId(0),channels(), subscriptionId(0),subscriptions() {};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {

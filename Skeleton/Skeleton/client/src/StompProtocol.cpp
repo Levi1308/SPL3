@@ -3,6 +3,10 @@
 #include <iostream>
 #include <sstream>  // For stringstream operations
 #include "keyboardInput.h"
+#include <stdexcept>
+
+using namespace std;
+
 
 StompProtocol::StompProtocol(ConnectionHandler& conn) : terminateKeyboard(false), terminateServerResponses(false),connection(conn)
 {
@@ -51,4 +55,90 @@ void StompProtocol::run()
     }
 }
 
+vector<string> StompProtocol::split(string line, char delimiter)
+{
+    vector<string> parts;
+    while (line.size() > 0)
+    {
+        string part = "";
+        std::size_t i = 0;
+        for (i = 0; i < line.size(); i++)
+        {
+            if (delimiter == line[i])
+            {
+                if (part.size() > 0)
+                    parts.push_back(part);
+                break;
+            }
+            else
+                part += line[i];
+        }
+        if (i == line.size())
+        {
+            parts.push_back(part);
+            line = "";
+        }
+        else
+            line = line.substr(i + 1);
+    }
+    return parts;
+
+}
+
+Event StompProtocol::parseEventReport(string report) {
+    vector<string> parts = StompProtocol::split(report, '\n');
+    string user, channel_name, city, event_name, time, description;
+    map<string, string> general_information;
+    bool details = true, general = false;
+
+    string previousLine;
+
+    for (const string& line : parts) {
+        if (details) {
+            if (line.find("channel name:") != string::npos) {
+                size_t index = line.find(':');
+                channel_name = line.substr(index + 1);
+            } else if (line.find("city:") != string::npos) {
+                size_t index = line.find(':');
+                city = line.substr(index + 1);
+            } else if (line.find("event name:") != string::npos) {
+                size_t index = line.find(':');
+                event_name = line.substr(index + 1);
+            } else if (line.find("time:") != string::npos) {
+                size_t index = line.find(':');
+                time = line.substr(index + 1);
+            }
+        }
+
+        if (line == "general information:") {
+            details = false;
+        }
+
+        if (general) {
+            size_t index = line.find(':');
+            if (index != string::npos) {
+                string header = line.substr(0, index);
+                string value = line.substr(index + 1);
+                general_information[header] = value;
+            }
+        } else if (previousLine == "description:") {
+            description = line;
+        }
+
+        if (line == "team a updates:") {
+            general = false;
+        }
+
+        previousLine = line;
+    }
+
+    // Validate the required fields
+    if (channel_name.empty() || city.empty() || event_name.empty() || time.empty() || description.empty()) {
+        throw runtime_error("Missing required fields in the report.");
+    }
+
+    // Create and return the Event object
+    int date_time = stoi(time);
+    return Event(channel_name, city, event_name, date_time, description, general_information);
+}
 
