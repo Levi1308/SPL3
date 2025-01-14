@@ -41,7 +41,7 @@ Command getCommand(const std::string &cmdStr)
     return Command::UNKNOWN;
 }
 
-void InputStream::run(ConnectionHandler connection)
+void InputStream::run(ConnectionHandler& connection)
 {
     std::string line;
     keyboardInput keyboard;
