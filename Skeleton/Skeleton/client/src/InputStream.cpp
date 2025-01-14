@@ -44,7 +44,6 @@ Command getCommand(const std::string &cmdStr)
 void InputStream::run(ConnectionHandler& connection)
 {
     std::string line;
-    keyboardInput keyboard;
     while (true)
     {
         // Get a full line of input
@@ -57,7 +56,7 @@ void InputStream::run(ConnectionHandler& connection)
         }
 
         // Split the input into command and arguments
-        std::vector<std::string> input = keyboard.split_str(line, ' ');
+        std::vector<std::string> input = split_str(line, ' ');
         if (!input.empty())
         {
             Command command = getCommand(input[0]); // Convert first word to enum
@@ -99,7 +98,6 @@ void InputStream::run(ConnectionHandler& connection)
                 }
                 else
                 {
-                    int x = 0;
                     // Code for EXIT command (commented in your original code)
                 }
             }

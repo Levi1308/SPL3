@@ -1,13 +1,9 @@
 
 #include "keyboardInput.h"
+#include <sstream> // Required for std::stringstream
 
-#include <string>
-#include <vector>
-#include <sstream>
-
-
-
-static std::vector<std::string> split_str(const std::string& str, char delimiter) {
+// Function to split a string by a delimiter
+std::vector<std::string> split_str(const std::string str, char delimiter) {
     std::vector<std::string> tokens;
     std::stringstream ss(str); // Create a stringstream from the input string
     std::string token;

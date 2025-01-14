@@ -3,6 +3,7 @@
 #include <map>
 #include "ConnectionHandler.h"
 #include "Channel.h"
+#include "keyboardInput.h"
 // Enum for commands
 enum class Command {
     LOGIN,
@@ -19,6 +20,8 @@ private:
     int recieptId;
     std::map<std::string,Channel> channels;
     std::string currentClient;
+
+
 public:
     InputStream();
     void run(ConnectionHandler& connection);

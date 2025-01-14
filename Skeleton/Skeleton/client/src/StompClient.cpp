@@ -11,11 +11,10 @@
 #include <thread>
 
 
-
+/*
 void Login(ConnectionHandler &connection)
 {
     std::string line;
-    keyboardInput keyboard;
     bool flag = false;
 
     while (!flag)
@@ -64,7 +63,7 @@ void Login(ConnectionHandler &connection)
         }
     }
 }
-
+*/
 int main (int argc, char *argv[])
 {
     if (argc < 3) {
@@ -87,12 +86,10 @@ int main (int argc, char *argv[])
     {
     StompProtocol protocol(connectionHandler);
     InputStream inputStream; 
-    std::thread keyboardThread(&InputStream::run, &inputStream, std::ref(connectionHandler));
-    thread serverThread(&StompProtocol::operator(), &protocol);
-
+    inputStream.run(connectionHandler);
+    thread serverThread(&StompProtocol::run, &protocol);
     serverThread.join();
-    keyboardThread.join();
-    
+        
     }
     std::cout << "Exiting program." << std::endl;
     return 0;

@@ -12,6 +12,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     private Map<String, Integer> loggedInUsers;
     public static int connectionID = 0;
 
+
     ConnectionsImpl() {
         activeClients = new HashMap<>();
         channelsSubscriptions = new HashMap<>();
@@ -19,8 +20,6 @@ public class ConnectionsImpl<T> implements Connections<T> {
         loggedInUsers = new HashMap<>();
     }
 
-
-    
     @Override
     public boolean send(int connectionId, T msg) {
         ConnectionHandler<T> handler = activeClients.getOrDefault(connectionId, null);

@@ -22,5 +22,4 @@ public:
 	vector<Event> getEvents_ByUser(string user);
 	string get_name();
     int getNumberDepartment();
-
 };

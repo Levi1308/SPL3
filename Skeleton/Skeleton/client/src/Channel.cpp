@@ -26,4 +26,7 @@ void Channel::addEvent(string user, Event event){
 		events.find(user)->second.push_back(event);
 	}
 }
+int Channel::getNumberDepartment(){
+	return events.size();
+}
 
