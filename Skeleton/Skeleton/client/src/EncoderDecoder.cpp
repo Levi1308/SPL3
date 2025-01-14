@@ -8,7 +8,7 @@ private:
     int len = 0;                      // Current length
 
 public:
-    EncoderDecoder() {}
+    EncoderDecoder():bytes(){};
 
     // Decodes the next byte, returning a string when '\n' is encountered
     std::string decodeNextByte(unsigned char nextByte) {

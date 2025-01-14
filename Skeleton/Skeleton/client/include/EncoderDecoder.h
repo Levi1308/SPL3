@@ -1,22 +1,19 @@
-
 #include <string>
 #include <iostream>
 #include <vector>
-#include <cstddef> // For std::byte
 
 class EncoderDecoder {
 private:
-    std::vector<std::byte> bytes; // Vector to store bytes
-    int len = 0;             
+    std::vector<unsigned char> bytes; // Vector to store bytes
+    int len = 0;                      // Length of the data
 
 public:
     // Constructor
     EncoderDecoder();
 
     // Method to decode the next byte
-    std::string decodeNextByte(std::byte nextByte);
+    std::string decodeNextByte(unsigned char nextByte);
 
     // Method to encode data and return as a vector of bytes
-    std::vector<std::byte> encode(std::string message);
+    std::vector<unsigned char> encode(const std::string& message);
 };
-

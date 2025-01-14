@@ -1,5 +1,5 @@
 
-#include "InputStream.h"
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@
 #include <json.hpp>
 #include "event.h"
 #include "keyboardInput.h"
-
+#include "InputStream.h"
 
 
 
@@ -162,7 +162,7 @@ void InputStream::run(ConnectionHandler& connection)
                     {
                         std::string message_report = "SEND\n\n"
                                                      "user" +
-                                                     currentClient + "\n"
+                                                     connection.getLoginedUser() + "\n"
                                                                      "city" +
                                                      e.get_city() + "\n"
                                                                     "event name:" +
