@@ -76,7 +76,7 @@ int main (int argc, char *argv[])
     
     
     ConnectionHandler connectionHandler(host, port);
-    InputStream inputStream(connectionHandler);
+    
 
     if (!connectionHandler.connect()) {
         std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
@@ -86,8 +86,9 @@ int main (int argc, char *argv[])
     if(1)
     {
     StompProtocol protocol(connectionHandler);
-    thread keyboardThread(&std::ref(inputStream),&protocol); 
-    thread serverThread(&StompProtocol::server_response_process, &protocol);
+    InputStream inputStream; 
+    std::thread keyboardThread(&InputStream::run, &inputStream, std::ref(connectionHandler));
+    thread serverThread(&StompProtocol::operator(), &protocol);
 
     serverThread.join();
     keyboardThread.join();

@@ -20,8 +20,8 @@ private:
     std::map<std::string,Channel> channels;
     std::string currentClient;
 public:
-    InputStream(ConnectionHandler connection);
-    void run();
+    InputStream();
+    void run(ConnectionHandler connection);
     void IncreamentRecieptId();
     void writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events);
 };

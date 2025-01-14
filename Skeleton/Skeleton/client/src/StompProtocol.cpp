@@ -4,7 +4,7 @@
 #include <sstream>  // For stringstream operations
 
 
-StompProtocol::StompProtocol(ConnectionHandler& connection) : terminateKeyboard(false), terminateServerResponses(false),connection(connection)
+StompProtocol::StompProtocol(ConnectionHandler& connection) : terminateKeyboard(false), terminateServerResponses(false),connection()
 {
 }
 

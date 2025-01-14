@@ -7,12 +7,9 @@
 #include <vector>
 #include <sstream>
 #include <cstring>
-<<<<<<< HEAD
-#include "keyboardInput.h"
-=======
 
-#include "../include/keyboardInput.h"
->>>>>>> d8552cce52773047364a9e1992f8568dc1e0e104
+#include "keyboardInput.h"
+
 
 using namespace std;
 using json = nlohmann::json;
