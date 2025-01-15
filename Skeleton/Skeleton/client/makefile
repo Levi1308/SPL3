@@ -5,14 +5,14 @@ all: clean compile link
 # Linking Rule
 link:
 	@echo "Linking source files"
-	g++ -o bin/StompProtocol bin/StompClient.o bin/StompFrame.o bin/Channel.o bin/EncoderDecoder.o \
-bin/event.o bin/InputStream.o bin/keyboardInput.o bin/ConnectionHandler.o
+	g++ -pthread -o bin/StompProtocol bin/StompFrame.o bin/Channel.o bin/EncoderDecoder.o \
+bin/event.o bin/InputStream.o bin/keyboardInput.o bin/ConnectionHandler.o bin/StompClient.o 
 
 
 # Compile Rule
 compile:
 	@echo "Compile StompClient"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/StompClient.o src/StompClient.cpp -Iinclude
+	g++ -pthread -g -Wall -Weffc++ -std=c++11 -c -o bin/StompClient.o src/StompClient.cpp -Iinclude
 	@echo "Compile Channel"
 	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/Channel.o src/Channel.cpp -Iinclude
 	@echo "Compile EncoderDecoder"

@@ -76,7 +76,7 @@ void InputStream::run(ConnectionHandler& connection)
                                                               "id:" +
                                                std::to_string(subscriptionId) + "\n"
                                                                                  "reciept:" +
-                                               std::to_string(recieptId);
+                                               std::to_string(recieptId)+"\0";
                     // Send the subscription message
                     if (!connection.sendLine(message_join))
                     {
@@ -185,7 +185,7 @@ void InputStream::run(ConnectionHandler& connection)
                         {
                             message_report += "\tforces_arrival_at_scene: " + it->second + "\n";
                         }
-                        message_report += "description:\n" + e.get_description();
+                        message_report += "description:\n" + e.get_description()+"\0";
                         channel.addEvent(e.get_name(),e);
                         if(!connection.sendLine(message_report))
                         {
@@ -229,7 +229,7 @@ void InputStream::run(ConnectionHandler& connection)
             {
                 std::string message_logout = "DISCONNECT\n"
                                              "reciept:" +
-                                             std::to_string(recieptId) + "\n";
+                                             std::to_string(recieptId) + "\0";
                 if (connection.sendLine(message_logout))
                 {
                     IncreamentRecieptId();
