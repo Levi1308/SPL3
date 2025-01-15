@@ -18,7 +18,7 @@
 
 
 InputStream::InputStream()
-    : recieptId(0),channels(), subscriptionId(0),subscriptions() {};
+    : recieptId(0),channels(), subscriptionId(0),subscriptions(),terminateKeyboard(false) {};
 
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {
@@ -43,7 +43,7 @@ Command getCommand(const std::string &cmdStr)
 void InputStream::run(ConnectionHandler& connection)
 {
     std::string line;
-    while (true)
+    while (!terminateKeyboard)
     {
         // Get a full line of input
         std::getline(std::cin, line);
@@ -233,15 +233,15 @@ void InputStream::run(ConnectionHandler& connection)
                 if (connection.sendLine(message_logout))
                 {
                     IncreamentRecieptId();
+                    terminateKeyboard = true;
                 }
             }
-            else if (command == Command::UNKNOWN)
-            {
-                std::cout << "Unknown command: " << input[0] << std::endl;
+            else if (command == Command::LOGIN) {
+                cout << "The client is already logged in, log out before trying again" << endl << endl;
             }
             else
             {
-                std::cerr << "Unhandled case in commands!" << std::endl;
+                cout << "Command is invalid. Enter a new command" << endl;
             }
         }
     }

@@ -189,6 +189,14 @@ void ConnectionHandler::addReport(string user, string channel_name, Event report
 	}
 }
 
+bool ConnectionHandler::getFrame(std::string &frame) {
+	return getFrameAscii(frame, '\0');
+}
+
+bool ConnectionHandler::sendFrame(std::string & frame) {
+	return sendFrameAscii(frame, '\0');
+}
+
 
 
 

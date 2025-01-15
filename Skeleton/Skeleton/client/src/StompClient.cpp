@@ -66,31 +66,48 @@ void Login(ConnectionHandler &connection)
 */
 int main (int argc, char *argv[])
 {
-    if (argc < 3) {
-        std::cerr << "Usage: " << argv[0] << " host port" << std::endl << std::endl;
-        return -1;
-    }
-    std::string host = argv[1];
-    short port = atoi(argv[2]);
-    
-    
-    ConnectionHandler connectionHandler(host, port);
-    
+    const short bufsize = 1024;
+    char buf[bufsize];
+    /* Receiving the first command - before creating the connection. If the connection is a valid login command - create the connection & the threads of the keyboard and server responses */
+    std::cin.getline(buf, bufsize);
+    std::string command(buf);
+    vector<string> partsOfCommand = StompProtocol::split(command, ' ');
+    if (partsOfCommand[0] == "login") {
+        cout << "" << endl;
+        if (partsOfCommand.size() == 4) {
+            
+            string host = partsOfCommand[1].substr(0, partsOfCommand[1].find(':'));
+            short port = stoi(partsOfCommand[1].substr(partsOfCommand[1].find(':') + 1));
+            ConnectionHandler connectionHandler(host, port);
+            if (!connectionHandler.connect()) {
+                std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
+                return 1;
+            }
+            string command = "CONNECT";
+            map<string, string> headers;
+            headers.insert({ "accept-version", "1.2" });
+            headers.insert({ "host", "stomp.cs.bgu.ac.il" });
+            headers.insert({ "login", partsOfCommand[2] });
+            headers.insert({ "passcode", partsOfCommand[3] });
+            StompFrame frame(command, headers, "");
+            string output = frame.createFrame();
+            connectionHandler.connectUser(partsOfCommand[2]);
+            connectionHandler.sendFrame(output);
 
-    if (!connectionHandler.connect()) {
-        std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
-        return 1;
-    }
-
-    if(1)
-    {
-    StompProtocol protocol(connectionHandler);
-    InputStream inputStream; 
-    inputStream.run(connectionHandler);
-    thread serverThread(&StompProtocol::run, &protocol);
-    serverThread.join();
+            try{
+            
+              StompProtocol protocol(connectionHandler);
+              InputStream inputStream; 
+              inputStream.run(connectionHandler);
+              thread serverThread(&StompProtocol::run, &protocol);
+              serverThread.join();
         
+            }
+              catch(exception) {
+                cout << "An error received, disconnecting.." << endl;
+            }
+      
+        }
     }
-    std::cout << "Exiting program." << std::endl;
     return 0;
 }
