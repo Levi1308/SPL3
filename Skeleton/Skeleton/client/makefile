@@ -1,42 +1,41 @@
-# Build all: clean, compile, and link
+# Compiler and flags
+CXX = g++
+CXXFLAGS = -g -Wall -Weffc++ -std=c++11 -Iinclude
+LDFLAGS = -pthread
 
-all: clean compile link
+# Directories
+BIN_DIR = bin
+SRC_DIR = src
+INCLUDE_DIR = include
+
+# Source files
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS = $(patsubst $(SRC_DIR)/%.cpp, $(BIN_DIR)/%.o, $(SOURCES))
+
+# Target executable
+TARGET = $(BIN_DIR)/StompClient
+
+
+# Build all: clean, compile, and link
+all: clean $(TARGET)
 
 # Linking Rule
-link:
+$(TARGET): $(OBJECTS)
 	@echo "Linking source files"
-	g++ -o bin/StompProtocol bin/StompClient.o bin/StompFrame.o bin/Channel.o bin/EncoderDecoder.o \
-bin/event.o bin/InputStream.o bin/keyboardInput.o bin/ConnectionHandler.o
-
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
 # Compile Rule
-compile:
-	@echo "Compile StompClient"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/StompClient.o src/StompClient.cpp -Iinclude
-	@echo "Compile Channel"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/Channel.o src/Channel.cpp -Iinclude
-	@echo "Compile EncoderDecoder"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/EncoderDecoder.o src/EncoderDecoder.cpp -Iinclude
-	@echo "Compile event"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/event.o src/event.cpp -Iinclude
-	@echo "Compile InputStream"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/InputStream.o src/InputStream.cpp -Iinclude
-	@echo "Compile keyboard"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/keyboardInput.o src/keyboardInput.cpp -Iinclude
-	@echo "Compile StompFrame"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/StompFrame.o src/StompFrame.cpp -Iinclude
-	@echo "Compile StompProtocol"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/StompProtocol.o src/StompProtocol.cpp -Iinclude
-	@echo "Compile ConnectionHandler"
-	g++ -g -Wall -Weffc++ -std=c++11 -c -o bin/ConnectionHandler.o src/ConnectionHandler.cpp -Iinclude
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "Compiling $<"
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-
-
+# Clean Rule
 clean:
 	@echo "Cleaning bin files"
-	rm -rf bin/*
+	rm -rf $(BIN_DIR)/*
 
-cleanObjAndrum:
+# Additional clean and run with Valgrind
+cleanObjAndRun:
 	@rm -f *.o
 	@clear
-	valgrind --leak-check=full --show-reachable=yes ./bin/main
+	valgrind --leak-check=full --show-reachable=yes ./$(TARGET)

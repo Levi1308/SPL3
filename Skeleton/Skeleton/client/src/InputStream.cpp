@@ -235,13 +235,12 @@ void InputStream::run(ConnectionHandler& connection)
                     IncreamentRecieptId();
                 }
             }
-            else if (command == Command::UNKNOWN)
-            {
-                std::cout << "Unknown command: " << input[0] << std::endl;
+            else if (command == Command::LOGIN) {
+                cout << "The client is already logged in, log out before trying again" << endl << endl;
             }
             else
             {
-                std::cerr << "Unhandled case in commands!" << std::endl;
+                cout << "Command is invalid. Enter a new command" << endl;
             }
         }
     }

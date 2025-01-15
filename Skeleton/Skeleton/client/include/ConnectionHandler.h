@@ -36,6 +36,9 @@ public:
 	int getSubID(string channel);
 	string findReceiptCommand(string receiptID);
 	void addReport(string user, string channel_name, Event report);
+	bool getFrame(std::string &frame);
+	bool sendFrame(std::string & frame);
+
 
 	ConnectionHandler(std::string host, short port);
 
