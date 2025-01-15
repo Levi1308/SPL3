@@ -21,6 +21,8 @@ private:
     std::map<std::string,Channel> channels;
     int subscriptionId;
     std::map<std::string,int> subscriptions;
+    bool terminateKeyboard;
+
 
 public:
     InputStream();

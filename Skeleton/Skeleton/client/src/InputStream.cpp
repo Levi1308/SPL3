@@ -43,7 +43,7 @@ Command getCommand(const std::string &cmdStr)
 void InputStream::run(ConnectionHandler& connection)
 {
     std::string line;
-    while (true)
+    while (!terminateKeyboard)
     {
         // Get a full line of input
         std::getline(std::cin, line);
@@ -233,6 +233,7 @@ void InputStream::run(ConnectionHandler& connection)
                 if (connection.sendLine(message_logout))
                 {
                     IncreamentRecieptId();
+                    terminateKeyboard = true;
                 }
             }
             else if (command == Command::LOGIN) {
