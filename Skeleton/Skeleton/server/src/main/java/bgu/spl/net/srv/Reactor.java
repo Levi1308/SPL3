@@ -1,28 +1,20 @@
 package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.StompMessagingProtocol;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
+import java.nio.channels.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
-import bgu.spl.net.srv.Server;
-import bgu.spl.net.srv.ActorThreadPool;
-import bgu.spl.net.srv.NonBlockingConnectionHandler;
 
 public class Reactor<T> implements Server<T> {
 
     private final int port;
     private final Supplier<StompMessagingProtocol<T>> protocolFactory;
     private final Supplier<MessageEncoderDecoder<T>> readerFactory;
-    private final ActorThreadPool pool;
+    private final ActorThreadPool<NonBlockingConnectionHandler<T>> pool;
     private Selector selector;
 
     private Thread selectorThread;
@@ -30,24 +22,24 @@ public class Reactor<T> implements Server<T> {
 
     private Connections<T> connections;
 
-
     public Reactor(
             int numThreads,
             int port,
             Supplier<StompMessagingProtocol<T>> protocolFactory,
             Supplier<MessageEncoderDecoder<T>> readerFactory) {
 
-        this.pool = new ActorThreadPool(numThreads);
+        this.connections = new ConnectionsImpl<>();
+        this.pool = new ActorThreadPool<>(numThreads);
         this.port = port;
         this.protocolFactory = protocolFactory;
         this.readerFactory = readerFactory;
-        this.connections = new ConnectionsImpl<>();
     }
 
     @Override
     public void serve() {
-	selectorThread = Thread.currentThread();
-        try (Selector selector = Selector.open();
+        selectorThread = Thread.currentThread();
+
+        try (   Selector selector = Selector.open();
                 ServerSocketChannel serverSock = ServerSocketChannel.open()) {
 
             this.selector = selector; //just to be able to close
@@ -55,7 +47,6 @@ public class Reactor<T> implements Server<T> {
             serverSock.bind(new InetSocketAddress(port));
             serverSock.configureBlocking(false);
             serverSock.register(selector, SelectionKey.OP_ACCEPT);
-			System.out.println("Server started");
 
             while (!Thread.currentThread().isInterrupted()) {
 
@@ -65,8 +56,10 @@ public class Reactor<T> implements Server<T> {
                 for (SelectionKey key : selector.selectedKeys()) {
 
                     if (!key.isValid()) {
+                        // In case the channel got canceled (currupted/closed)
                         continue;
                     } else if (key.isAcceptable()) {
+                        // key.interested_ops & OP_ACCEPT != 0
                         handleAccept(serverSock, selector);
                     } else {
                         handleReadWrite(key);
@@ -88,8 +81,10 @@ public class Reactor<T> implements Server<T> {
         pool.shutdown();
     }
 
-    /*package*/ void updateInterestedOps(SocketChannel chan, int ops) {
+    void updateInterestedOps(SocketChannel chan, int ops) {
         final SelectionKey key = chan.keyFor(selector);
+        if(key == null) return;
+
         if (Thread.currentThread() == selectorThread) {
             key.interestOps(ops);
         } else {
@@ -103,37 +98,43 @@ public class Reactor<T> implements Server<T> {
 
     private void handleAccept(ServerSocketChannel serverChan, Selector selector) throws IOException {
         SocketChannel clientChan = serverChan.accept();
+
         clientChan.configureBlocking(false);
-        final NonBlockingConnectionHandler<T> handler = new NonBlockingConnectionHandler<>(
+        NonBlockingConnectionHandler<T> handler = new NonBlockingConnectionHandler<>(
                 connections,
                 ConnectionsImpl.connectionID,
                 readerFactory.get(),
                 protocolFactory.get(),
                 clientChan,
                 this);
-                ConnectionsImpl.connectionID++;
+        ConnectionsImpl.connectionID++;
         clientChan.register(selector, SelectionKey.OP_READ, handler);
     }
 
     private void handleReadWrite(SelectionKey key) {
         @SuppressWarnings("unchecked")
         NonBlockingConnectionHandler<T> handler = (NonBlockingConnectionHandler<T>) key.attachment();
-
         if (key.isReadable()) {
             Runnable task = handler.continueRead();
             if (task != null) {
                 pool.submit(handler, task);
+            } else if (!key.isValid()) {
+                // if no task was created, key may no longer be valid and throw exception on key.isWritable
+                return;
             }
         }
-
-	    if (key.isValid() && key.isWritable()) {
+        if (key.isWritable()) {
             handler.continueWrite();
         }
     }
 
     private void runSelectionThreadTasks() {
         while (!selectorTasks.isEmpty()) {
-            selectorTasks.remove().run();
+            try{
+                selectorTasks.remove().run();
+            } catch (CancelledKeyException e){
+                System.out.println("CancelledKeyException");
+            }
         }
     }
 

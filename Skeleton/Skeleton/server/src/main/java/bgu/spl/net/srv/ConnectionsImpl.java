@@ -2,15 +2,9 @@ package bgu.spl.net.srv;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class ConnectionsImpl<T> implements Connections<T> {
-    private Map<Integer, ConnectionHandler<T>> activeClients;
-    private Map<String, Map<ConnectionHandler<T>, Integer>> channelsSubscriptions;
-    private Map<String, String> users;
-    private Map<String, Integer> loggedInUsers;
-    public static int connectionID = 0;
+public class ConnectionsImpl <T> implements Connections <T> {
+
 
 
     ConnectionsImpl() {
@@ -19,30 +13,31 @@ public class ConnectionsImpl<T> implements Connections<T> {
         users = new HashMap<>();
         loggedInUsers = new HashMap<>();
     }
+    
+    private Map<Integer, ConnectionHandler<T>> activeClients;
 
-    @Override
-    public boolean send(int connectionId, T msg) {
-        ConnectionHandler<T> handler = activeClients.getOrDefault(connectionId, null);
-        if (handler != null) {
-            handler.send(msg);
-            return true;
-        }
-        return false;
+    private Map<String, Map<ConnectionHandler<T>, Integer>> channelsSubscriptions;
+
+    private Map<String, String> users;
+
+    private Map<String, Integer> loggedInUsers;
+
+    public static int connectionID = 0;
+
+    public boolean send(int connectionId, T msg) { //Sending a message to a specific user using the connectionHandler (client)
+        activeClients.get(connectionId).send(msg);
+        return true;
     }
 
-    @Override
-    public void send(String channel, T msg) {
-        Map<ConnectionHandler<T>, Integer> subscribers = channelsSubscriptions.get(channel);
-        if (subscribers != null) {
-            for(ConnectionHandler<T> connection: subscribers.keySet()) {
-                connection.send(msg);
-            }
+    public void send(String channel, T msg) { //Sending a message to a channel (to all the users subscribed to the channel)
+        Map<ConnectionHandler<T>, Integer> subscribed = channelsSubscriptions.get(channel);
+        for(ConnectionHandler<T> connection: subscribed.keySet()) {
+            connection.send(msg);
         }
     }
 
-    @Override
-    public void disconnect(int connectionId) {
-        loggedInUsers.values().remove(connectionId);
+    public void disconnect(int connectionId) { //Disconnecting a client
+        loggedInUsers.values().remove(connectionId); //Removing the user connected to the client from the loggedInUsers
         for (String channel : channelsSubscriptions.keySet()) { //Going over the channels & removing the user from every channel it subscribed to
             Map<ConnectionHandler<T>, Integer> subs = channelsSubscriptions.get(channel);
             for (ConnectionHandler<T> conn : subs.keySet()) {
@@ -73,7 +68,6 @@ public class ConnectionsImpl<T> implements Connections<T> {
             return true;
         }
     }
-
 
     public boolean removeChannelSubscription(Integer subscriptionID, ConnectionHandler<T> connection) {
         for(String channel: channelsSubscriptions.keySet()) {
@@ -132,13 +126,10 @@ public class ConnectionsImpl<T> implements Connections<T> {
     }
 
     public ConnectionHandler<T> getConnection(int connectionID) {
-        return activeClients.getOrDefault(connectionID,null);
+        return activeClients.get(connectionID);
     }
 
     public void removeConnection(int connectionID) {
         activeClients.remove(connectionID);
     }
-        
-    
 }
-
