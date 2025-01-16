@@ -41,12 +41,14 @@ Command getCommand(const std::string &cmdStr)
     return Command::UNKNOWN;
 }
 
-void InputStream::run(ConnectionHandler& connection)
+void InputStream::run(ConnectionHandler* connection)
 {
     
     std::string line;
     while (!terminateKeyboard)
     {
+         std::cout << "enter Run loop" << std::endl;
+         
         // Get a full line of input
         std::getline(std::cin, line);
 
@@ -58,6 +60,11 @@ void InputStream::run(ConnectionHandler& connection)
 
         // Split the input into command and arguments
         std::vector<std::string> input = split_str(line, ' ');
+        
+        for(std::string s:input){
+            std::cout << s << std::endl;
+        }
+         std::cout << std::to_string(connection->isLogined())<< std::endl;
         if (!input.empty())
         {
             Command command = getCommand(input[0]); // Convert first word to enum
@@ -65,6 +72,7 @@ void InputStream::run(ConnectionHandler& connection)
             // Process commands using if-else instead of switch
             if (command == Command::JOIN)
             {
+                std::cout << "enter join frame" << std::endl;
                 if (input.size() < 2)
                 {
                     std::cout << "Error: join requires a channel name." << std::endl;
@@ -72,21 +80,20 @@ void InputStream::run(ConnectionHandler& connection)
                 else
                 {
                     std::string channel_name = input[1];
-                    std::string message_join = "SUBSCRIBE\n"
-                                               "destination:" +
-                                               channel_name + "\n"
-                                                              "id:" +
-                                               std::to_string(subscriptionId) + "\n"
-                                                                                 "reciept:" +
-                                               std::to_string(recieptId);
+                    std::string message_join = "SUBSCRIBE\n";
+                    message_join+= "destination:" +channel_name + "\n";
+                    message_join+= "id:" +std::to_string(subscriptionId) + "\n";
+                    message_join+="reciept:" +std::to_string(recieptId)+"\0";
+                                                                                                   
                     // Send the subscription message
-                    if (!connection.sendLine(message_join))
+                    if (!connection->sendFrame(message_join))
                     {
                         std::cerr << "Failed to send subscription message for channel:" << channel_name << std::endl;
                         continue;
                     }
                     else
-                    {    
+                    {   
+                        std::cout << "send join frame" << std::endl; 
                         Channel chan(channel_name);
                         channels.insert(std::make_pair(channel_name,chan));
                         subscriptions.insert(std::make_pair(channel_name,subscriptionId));
@@ -97,6 +104,7 @@ void InputStream::run(ConnectionHandler& connection)
             }
             else if (command == Command::EXIT)
             {
+                std::cout << "enter exit frame" << std::endl;
                 if (input.size() < 2)
                 {
                     std::cout << "Error: exit requires a channel name." << std::endl;
@@ -121,13 +129,14 @@ void InputStream::run(ConnectionHandler& connection)
                                                                          "reciept" +
                                           std::to_string(recieptId) + "\0";
                     // Send the subscription message
-                    if (!connection.sendLine(message_exit))
+                    if (!connection->sendFrame(message_exit))
                     {
                         std::cerr << "Failed to send unsubscription message for channel:" << channel_name << std::endl;
                         break;
                     }
                     else
                     {    
+                         std::cout << "send Exit frame" << std::endl;
                         channels.erase(channel_name);
                         IncreamentRecieptId();
                         //IncreamentSubId();
@@ -144,6 +153,7 @@ void InputStream::run(ConnectionHandler& connection)
             }
             else if (command == Command::REPORT)
             {
+                std::cout << "enter report frame" << std::endl;
                 if (input.size() < 2)
                 {
                     std::cout << "Error: report requires a file path." << std::endl;
@@ -164,7 +174,7 @@ void InputStream::run(ConnectionHandler& connection)
                     {
                         std::string message_report = "SEND\n\n"
                                                      "user" +
-                                                     connection.getLoginedUser() + "\n"
+                                                     connection->getLoginedUser() + "\n"
                                                                      "city" +
                                                      e.get_city() + "\n"
                                                                     "event name:" +
@@ -187,20 +197,23 @@ void InputStream::run(ConnectionHandler& connection)
                         {
                             message_report += "\tforces_arrival_at_scene: " + it->second + "\n";
                         }
-                        message_report += "description:\n" + e.get_description();
+                        message_report += "description:\n" + e.get_description()+"\0";
                         channel.addEvent(e.get_name(),e);
-                        if(!connection.sendLine(message_report))
+                        if(!connection->sendFrame(message_report))
                         {
                         std::cerr << "Failed to send unsubscription message for channel:" << channelName << std::endl;
                         break;
                     }
-                    else{}
+                    else{
+                         std::cout << "send Report frame" << std::endl;
+                    }
                     }
                 }
             }
             }
             else if (command == Command::SUMMARY)
             {
+                std::cout << "enter summary frame" << std::endl;
                 if (input.size() < 4)
                 {
                     std::cout << "Error: summary requires channel name, user, and file path." << std::endl;
@@ -229,6 +242,7 @@ void InputStream::run(ConnectionHandler& connection)
             }
             else if (command == Command::LOGOUT)
             {
+<<<<<<< HEAD
                 string command1 = "DISCONNECT";
                 int receipt = connection.produceReceipt(command1);
                 map<string, string> headers;
@@ -237,6 +251,25 @@ void InputStream::run(ConnectionHandler& connection)
                 string output = frame.createFrame();
                 connection.sendFrame(output);
                 terminateKeyboard = true;
+=======
+                std::cout << "enter logout frame" << std::endl;
+                
+                std::string message_logout = "DISCONNECT\n";
+                message_logout+="reciept:" +std::to_string(recieptId);
+                StompFrame tempFrame(message_logout);
+                std::string frame=tempFrame.createFrame();
+                std::cout << frame << std::endl;
+                if (connection->sendLine(frame))
+                {
+                    std::cout << "send logout frame" << std::endl;
+                    IncreamentRecieptId();
+                    terminateKeyboard = true;
+                }
+                else
+                {
+                     std::cout << "Failed to send logout frame" << std::endl;
+                }
+>>>>>>> 40246fb9df285409d32cbae5a8d326615d67a52b
             }
             else if (command == Command::LOGIN) {
                 cout << "The client is already logged in, log out before trying again" << endl << endl;

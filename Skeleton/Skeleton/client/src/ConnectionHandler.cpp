@@ -53,10 +53,15 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
 }
 
 bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
+	  for (int i = 0; i < bytesToWrite; i++) {
+        std::cout << bytes[i] << std::endl;
+    }
 	int tmp = 0;
 	boost::system::error_code error;
+	std::cout<<"trying send frame"+std::to_string(bytesToWrite)<< std::endl;
 	try {
 		while (!error && bytesToWrite > tmp) {
+			std::cout<<"trying send frame in while"+std::to_string(tmp)<< std::endl;
 			tmp += socket_.write_some(boost::asio::buffer(bytes + tmp, bytesToWrite - tmp), error);
 		}
 		if (error)
