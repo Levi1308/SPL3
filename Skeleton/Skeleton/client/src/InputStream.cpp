@@ -242,34 +242,15 @@ void InputStream::run(ConnectionHandler* connection)
             }
             else if (command == Command::LOGOUT)
             {
-<<<<<<< HEAD
                 string command1 = "DISCONNECT";
-                int receipt = connection.produceReceipt(command1);
+                int receipt = connection->produceReceipt(command1);
                 map<string, string> headers;
                 headers.insert({ "receipt", to_string(receipt)});
                 StompFrame frame(command1, headers, "");
                 string output = frame.createFrame();
-                connection.sendFrame(output);
+                connection->sendFrame(output);
                 terminateKeyboard = true;
-=======
-                std::cout << "enter logout frame" << std::endl;
-                
-                std::string message_logout = "DISCONNECT\n";
-                message_logout+="reciept:" +std::to_string(recieptId);
-                StompFrame tempFrame(message_logout);
-                std::string frame=tempFrame.createFrame();
-                std::cout << frame << std::endl;
-                if (connection->sendLine(frame))
-                {
-                    std::cout << "send logout frame" << std::endl;
-                    IncreamentRecieptId();
-                    terminateKeyboard = true;
-                }
-                else
-                {
-                     std::cout << "Failed to send logout frame" << std::endl;
-                }
->>>>>>> 40246fb9df285409d32cbae5a8d326615d67a52b
+
             }
             else if (command == Command::LOGIN) {
                 cout << "The client is already logged in, log out before trying again" << endl << endl;
