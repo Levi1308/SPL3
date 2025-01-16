@@ -27,12 +27,15 @@ void StompProtocol::run()
         if(hasAnswered) { //If a response from the server received
             StompFrame frame(answer);
             cout << answer;
-            if (frame.getCommand() == "RECEIPT") {
+            if (frame.getCommand() == "CONNECTED") {
+                cout << "Login succesful" << endl;
+            }        
+             if (frame.getCommand() == "RECEIPT") {
                 map<string, string> headers = frame.getHeaders();
                 string receiptID = headers.find("receipt-id")->second;
                 string receiptCOMMAND = connection.findReceiptCommand(receiptID);
                 if (receiptCOMMAND == "DISCONNECT") { //If the receipt received is for a DISCONNECT frame - close the connection
-                    cout << "bye bye" << endl;
+                    cout << "Logged out" << endl;
                     terminateServerResponses = true;
                     connection.close();
                 }
@@ -123,10 +126,6 @@ Event StompProtocol::parseEventReport(string report) {
             }
         } else if (previousLine == "description:") {
             description = line;
-        }
-
-        if (line == "team a updates:") {
-            general = false;
         }
 
         previousLine = line;

@@ -69,11 +69,11 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
 }
 
 bool ConnectionHandler::getLine(std::string &line) {
-	return getFrameAscii(line, '\n');
+	return getFrameAscii(line, '\0');
 }
 
 bool ConnectionHandler::sendLine(std::string &line) {
-	return sendFrameAscii(line, '\n');
+	return sendFrameAscii(line, '\0');
 }
 
 
@@ -89,6 +89,7 @@ bool ConnectionHandler::getFrameAscii(std::string &frame, char delimiter) {
 			if (ch != '\0')
 				frame.append(1, ch);
 		} while (delimiter != ch);
+		frame.append(1, ch);
 	} catch (std::exception &e) {
 		std::cerr << "recv failed2 (Error: " << e.what() << ')' << std::endl;
 		return false;

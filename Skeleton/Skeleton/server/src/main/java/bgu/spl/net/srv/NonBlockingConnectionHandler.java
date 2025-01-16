@@ -124,10 +124,19 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
 
     @Override
     public void send(T msg) {
-        //IMPLEMENT IF NEEDED
-        writeQueue.add(ByteBuffer.wrap(encdec.encode(msg)));
-        reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+      // Encode the message into a byte array
+      byte[] encodedMessage = encdec.encode(msg);
+
+      // Wrap the byte array into a ByteBuffer
+      ByteBuffer buffer = ByteBuffer.wrap(encodedMessage);
+
+      // Add the buffer to the write queue
+      writeQueue.add(buffer);
+
+      // Notify the reactor to update the channel's interest operations
+      reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
+
 
     public List<String> getChannelsSubscribed() {
         return channelsSubscribed;

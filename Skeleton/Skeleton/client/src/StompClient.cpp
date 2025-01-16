@@ -98,9 +98,13 @@ int main (int argc, char *argv[])
             
               StompProtocol protocol(connectionHandler);
               InputStream inputStream; 
-              inputStream.run(connectionHandler);
-              thread serverThread(&StompProtocol::run, &protocol);
-              serverThread.join();
+               // Start threads for input and server handling
+               std::thread keyboardThread(&InputStream::run, &inputStream, std::ref(connectionHandler));
+               std::thread serverThread(&StompProtocol::run, &protocol);
+
+              // Join threads
+               keyboardThread.join();
+               serverThread.join();
         
             }
               catch(exception) {

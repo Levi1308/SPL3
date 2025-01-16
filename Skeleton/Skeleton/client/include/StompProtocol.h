@@ -11,8 +11,8 @@ class Event;
 
 class StompProtocol
 {
-private:
-    bool terminateKeyboard;          
+private:         
+    bool terminateKeyboard;
     bool terminateServerResponses;
     ConnectionHandler &connection;  
 

@@ -14,6 +14,7 @@
 #include "event.h"
 #include "keyboardInput.h"
 #include "InputStream.h"
+#include "StompFrame.h"
 
 
 
@@ -42,6 +43,7 @@ Command getCommand(const std::string &cmdStr)
 
 void InputStream::run(ConnectionHandler& connection)
 {
+    
     std::string line;
     while (!terminateKeyboard)
     {
@@ -227,14 +229,14 @@ void InputStream::run(ConnectionHandler& connection)
             }
             else if (command == Command::LOGOUT)
             {
-                std::string message_logout = "DISCONNECT\n"
-                                             "reciept:" +
-                                             std::to_string(recieptId) + "\n";
-                if (connection.sendLine(message_logout))
-                {
-                    IncreamentRecieptId();
-                    terminateKeyboard = true;
-                }
+                string command1 = "DISCONNECT";
+                int receipt = connection.produceReceipt(command1);
+                map<string, string> headers;
+                headers.insert({ "receipt", to_string(receipt)});
+                StompFrame frame(command1, headers, "");
+                string output = frame.createFrame();
+                connection.sendFrame(output);
+                terminateKeyboard = true;
             }
             else if (command == Command::LOGIN) {
                 cout << "The client is already logged in, log out before trying again" << endl << endl;

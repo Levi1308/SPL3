@@ -66,15 +66,21 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     public List<String> getChannelsSubscribed() {
         return channelsSubscribed;
     }
-
     @Override
     public void send(T msg) {
-        //IMPLEMENT IF NEEDED
         try {
-            out.write(encdec.encode(msg));
+            // Encoding the message into a byte array
+            byte[] encodedMessage = encdec.encode(msg);
+            
+            // Writing the encoded message to the output stream
+            out.write(encodedMessage);
+            
+            // Flushing the output stream to ensure the message is sent
             out.flush();
         } catch (IOException ex) {
+            System.err.println("Failed to send message: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
+    
 }
