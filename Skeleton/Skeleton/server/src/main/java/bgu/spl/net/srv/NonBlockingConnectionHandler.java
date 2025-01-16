@@ -1,22 +1,18 @@
 package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.StompMessagingProtocol;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import bgu.spl.net.srv.Reactor;
-import bgu.spl.net.srv.ConnectionHandler;
+import java.nio.ByteBuffer;
+import java.util.Queue;
+import java.nio.channels.SocketChannel;
+import java.io.IOException;
+import java.nio.channels.SelectionKey;
 
 public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
-
     private static final int BUFFER_ALLOCATION_SIZE = 1 << 13; //8k
     private static final ConcurrentLinkedQueue<ByteBuffer> BUFFER_POOL = new ConcurrentLinkedQueue<>();
 
@@ -24,9 +20,9 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
     private final MessageEncoderDecoder<T> encdec;
     private final Queue<ByteBuffer> writeQueue = new ConcurrentLinkedQueue<>();
     private final SocketChannel chan;
-    private final Reactor reactor;
+    private final Reactor<T> reactor;
 
-     private List<String> channelsSubscribed;
+    private List<String> channelsSubscribed;
 
     private int connectionID;
     private Connections<T> connections;
@@ -37,7 +33,8 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
             MessageEncoderDecoder<T> reader,
             StompMessagingProtocol<T> protocol,
             SocketChannel chan,
-            Reactor reactor) {
+            Reactor<T> reactor) {
+        connections = connection;
         this.chan = chan;
         this.encdec = reader;
         this.protocol = protocol;
@@ -54,11 +51,12 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
         try {
             success = chan.read(buf) != -1;
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println(ex.getMessage());
         }
 
         if (success) {
             buf.flip();
+            // Creating a task, Notice that this code is very similar to the BlockingConnectionHandler's main loop
             return () -> {
                 try {
                     while (buf.hasRemaining()) {
@@ -84,16 +82,12 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
         try {
             chan.close();
         } catch (IOException ex) {
-            ex.printStackTrace();
+            System.out.println(ex.getMessage());
         }
     }
 
-    public boolean isClosed() {
-        return !chan.isOpen();
-    }
-
     public void continueWrite() {
-        while (!writeQueue.isEmpty()) {
+        while (!writeQueue.isEmpty() && chan.isOpen()) {
             try {
                 ByteBuffer top = writeQueue.peek();
                 chan.write(top);
@@ -103,7 +97,7 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
                     writeQueue.remove();
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                System.out.println(ex.getMessage());
                 close();
             }
         }
@@ -130,15 +124,12 @@ public class NonBlockingConnectionHandler<T> implements ConnectionHandler<T> {
 
     @Override
     public void send(T msg) {
-        byte[] bytes=encdec.encode(msg);
-        ByteBuffer bbuffer=ByteBuffer.wrap(bytes);
-        writeQueue.add(bbuffer);
-        reactor.updateInterestedOps(chan, SelectionKey.OP_READ);
+        //IMPLEMENT IF NEEDED
+        writeQueue.add(ByteBuffer.wrap(encdec.encode(msg)));
+        reactor.updateInterestedOps(chan, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
     }
 
     public List<String> getChannelsSubscribed() {
         return channelsSubscribed;
     }
-    
 }
-

@@ -63,6 +63,10 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
         sock.close();
     }
 
+    public List<String> getChannelsSubscribed() {
+        return channelsSubscribed;
+    }
+
     @Override
     public void send(T msg) {
         //IMPLEMENT IF NEEDED
@@ -72,6 +76,5 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        
     }
 }
