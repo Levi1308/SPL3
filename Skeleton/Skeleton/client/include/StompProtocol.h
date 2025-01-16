@@ -14,10 +14,9 @@ class StompProtocol
 private:
     bool terminateKeyboard;          
     bool terminateServerResponses;
-    ConnectionHandler &connection;  
-
+    ConnectionHandler* connection;
 public:
-    StompProtocol(ConnectionHandler& conn);
+    StompProtocol(ConnectionHandler* conn);
     void run();
     Event parseEventReport(string report);
     vector<string> static split(string line, char delimiter);
