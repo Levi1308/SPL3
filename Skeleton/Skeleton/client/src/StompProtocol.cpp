@@ -8,7 +8,7 @@
 using namespace std;
 
 
-StompProtocol::StompProtocol(ConnectionHandler* conn): terminateKeyboard(false), terminateServerResponses(false),
+StompProtocol::StompProtocol(ConnectionHandler& conn): terminateKeyboard(false), terminateServerResponses(false),
 connection(conn)
 {
     
@@ -19,7 +19,7 @@ void StompProtocol::run()
     while (!terminateServerResponses) {
        
         std::string answer;
-        bool hasAnswered = connection->getLine(answer); //Receiving a response from the server
+        bool hasAnswered = connection.getLine(answer); //Receiving a response from the server
         if (!hasAnswered) { //If the server connection was closed and no response receieved - close the client
             std::cout << "Disconnected. Exiting...\n" << std::endl;
             terminateKeyboard = true;
@@ -34,11 +34,11 @@ void StompProtocol::run()
              if (frame.getCommand() == "RECEIPT") {
                 map<string, string> headers = frame.getHeaders();
                 string receiptID = headers.find("receipt-id")->second;
-                string receiptCOMMAND = connection->findReceiptCommand(receiptID);
+                string receiptCOMMAND = connection.findReceiptCommand(receiptID);
                 if (receiptCOMMAND == "DISCONNECT") { //If the receipt received is for a DISCONNECT frame - close the connection
                     cout << "Logged out" << endl;
                     terminateServerResponses = true;
-                    connection->close();
+                    connection.close();
                 }
             }
             else if (frame.getCommand() == "ERROR") {
@@ -53,7 +53,7 @@ void StompProtocol::run()
                 string user = userLine.substr(index);
                 Event object = parseEventReport(report);
                 string channel_name = object.get_channel_name();
-                connection->addReport(user, channel_name, object);
+                connection.addReport(user, channel_name, object);
             }
         }
     }
