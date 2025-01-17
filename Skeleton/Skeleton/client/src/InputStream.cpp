@@ -230,13 +230,14 @@ void InputStream::run(ConnectionHandler& connection)
             else if (command == Command::LOGOUT)
             {
                 string command1 = "DISCONNECT";
-                int receipt = connection.produceReceipt(command1);
+                int receipt = connection->produceReceipt(command1);
                 map<string, string> headers;
                 headers.insert({ "receipt", to_string(receipt)});
                 StompFrame frame(command1, headers, "");
                 string output = frame.createFrame();
-                connection.sendFrame(output);
+                connection->sendFrame(output);
                 terminateKeyboard = true;
+
             }
             else if (command == Command::LOGIN) {
                 cout << "The client is already logged in, log out before trying again" << endl << endl;
