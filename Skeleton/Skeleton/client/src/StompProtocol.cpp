@@ -25,6 +25,7 @@ void StompProtocol::run()
             terminateKeyboard = true;
             break;
         }
+
         if(hasAnswered) { //If a response from the server received
             StompFrame frame(answer);
             cout << answer;
@@ -37,6 +38,8 @@ void StompProtocol::run()
                 string receiptCOMMAND = connection.findReceiptCommand(receiptID);
                 if (receiptCOMMAND == "DISCONNECT") { //If the receipt received is for a DISCONNECT frame - close the connection
                     cout << "Logged out" << endl;
+                    cout << "RECEIPT" << endl;
+                    cout << "recipet-id:"+ receiptID<< endl;
                     terminateServerResponses = true;
                     connection.close();
                 }

@@ -14,10 +14,9 @@ enum class Command {
     UNKNOWN,
     LOGOUT
 };
-
+using namespace std;
 class InputStream {
 private:
-    int recieptId;
     std::map<std::string,Channel> channels;
     int subscriptionId;
     std::map<std::string,int> subscriptions;
@@ -27,7 +26,6 @@ private:
 public:
     InputStream();
     void run(ConnectionHandler& connection);
-    void IncreamentRecieptId();
     void IncreamentSubId();
     void writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events);
 };

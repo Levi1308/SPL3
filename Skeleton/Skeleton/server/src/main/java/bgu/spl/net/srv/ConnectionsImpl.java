@@ -5,8 +5,6 @@ import java.util.Map;
 
 public class ConnectionsImpl <T> implements Connections <T> {
 
-
-
     ConnectionsImpl() {
         activeClients = new HashMap<>();
         channelsSubscriptions = new HashMap<>();

@@ -107,7 +107,7 @@ int main (int argc, char *argv[])
                serverThread.join();
         
             }
-              catch(exception) {
+              catch (const std::exception& e) {
                 cout << "An error received, disconnecting.." << endl;
             }
       

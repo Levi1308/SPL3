@@ -122,7 +122,7 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
             Map<String, String> frameHeaders = frame.getHeaders();
             String receiptID = frameHeaders.get("receipt");
             String subscriptionID = frameHeaders.get("id");
-            String channel = frameHeaders.get("destination").substring(1); //without the '/' in the beginning of the channel
+            String channel = frameHeaders.get("destination");
             boolean done = activeConnections.addChannelSubscription(channel, Integer.parseInt(subscriptionID), activeConnections.getConnection(connectionID));
             if (done) { //Managed to add the subscription
                 Map<String, String> outputHeaders = new HashMap<>();
