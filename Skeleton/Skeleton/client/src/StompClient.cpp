@@ -5,7 +5,6 @@
 #include <sstream>
 #include "ConnectionHandler.h"
 #include "keyboardInput.h"
-#include "InputStream.h"
 #include "StompProtocol.h"
 #include <stdlib.h>
 #include <thread>
@@ -97,21 +96,25 @@ int main (int argc, char *argv[])
 
             try{
             
-              StompProtocol protocol(connectionHandler);
-              InputStream inputStream; 
+               StompProtocol protocol(connectionHandler);
                // Start threads for input and server handling
-               std::thread keyboardThread(&InputStream::run, &inputStream, std::ref(connectionHandler));
                std::thread serverThread(&StompProtocol::run, &protocol);
+               std::thread keyboardThread(&StompProtocol::run_keyboard, &protocol);
+               
 
               // Join threads
-               keyboardThread.join();
-               serverThread.join();
+              serverThread.join();
+              keyboardThread.join();
+               
         
             }
               catch (const std::exception& e) {
                 cout << "An error received, disconnecting.." << endl;
             }
       
+        }
+        else{
+            cout << "login command needs 3 arguments: {port} {user} {passcode}" <<endl;
         }
     }
     return 0;

@@ -45,8 +45,8 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 try {
                     shouldTerminate = true;
                     activeConnections.disconnect(connectionID); //Resetting all client related data (subscriptions & from loggedIn clients list)
-                    activeConnections.removeConnection(connectionID);
                     activeConnections.getConnection(connectionID).close();
+                    activeConnections.removeConnection(connectionID);
                 }
                 catch (IOException exception) {}
             }
@@ -70,8 +70,8 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 try {
                     shouldTerminate = true;
                     activeConnections.disconnect(connectionID);
-                    activeConnections.removeConnection(connectionID);
                     activeConnections.getConnection(connectionID).close();
+                    activeConnections.removeConnection(connectionID);
                 }
                 catch (IOException exception) {}
             }
@@ -113,8 +113,8 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 try {
                     shouldTerminate = true;
                     activeConnections.disconnect(connectionID);
-                    activeConnections.removeConnection(connectionID);
                     activeConnections.getConnection(connectionID).close();
+                    activeConnections.removeConnection(connectionID);
                 }
                 catch (IOException exception) {}
             }
@@ -148,8 +148,8 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 try {
                     shouldTerminate = true;
                     activeConnections.disconnect(connectionID);
-                    activeConnections.removeConnection(connectionID);
                     activeConnections.getConnection(connectionID).close();
+                    activeConnections.removeConnection(connectionID);
                 }
                 catch (IOException exception) {}
             }
@@ -172,8 +172,8 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 try {
                     shouldTerminate = true;
                     activeConnections.disconnect(connectionID);
-                    activeConnections.removeConnection(connectionID);
                     activeConnections.getConnection(connectionID).close();
+                    activeConnections.removeConnection(connectionID);
                 }
                 catch (IOException exception) {}
             }

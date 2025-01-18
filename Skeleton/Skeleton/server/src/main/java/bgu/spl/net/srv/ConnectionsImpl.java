@@ -2,14 +2,15 @@ package bgu.spl.net.srv;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionsImpl <T> implements Connections <T> {
 
     ConnectionsImpl() {
-        activeClients = new HashMap<>();
-        channelsSubscriptions = new HashMap<>();
-        users = new HashMap<>();
-        loggedInUsers = new HashMap<>();
+        activeClients = new ConcurrentHashMap<>();
+        channelsSubscriptions = new ConcurrentHashMap<>();
+        users = new ConcurrentHashMap<>();
+        loggedInUsers = new ConcurrentHashMap<>();
     }
     
     private Map<Integer, ConnectionHandler<T>> activeClients;
