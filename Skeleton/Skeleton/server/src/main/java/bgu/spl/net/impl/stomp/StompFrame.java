@@ -102,4 +102,14 @@ public class StompFrame<T> {
     public String getBody() {
         return body;
     }
+
+    @Override
+    public String toString() {
+        String output=STOMPCommand+"\n";
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            output+=entry.getKey() + ": " + entry.getValue()+"\n";
+        }
+        output+=body;
+        return output;
+    }
 }

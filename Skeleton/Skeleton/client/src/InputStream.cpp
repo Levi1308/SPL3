@@ -75,7 +75,7 @@ void InputStream::run(ConnectionHandler &connection)
                     map<string, string> headers;
                     headers.insert({"destination", channel_name});
                     headers.insert({"id", std::to_string(subscriptionId)});
-                    headers.insert({"reciept", std::to_string(receipt)});
+                    headers.insert({"receipt", std::to_string(receipt)});
 
                     StompFrame frame(join_command, headers, "");
                     string output = frame.createFrame();
@@ -90,7 +90,7 @@ void InputStream::run(ConnectionHandler &connection)
                     {
                         // Channel chan(channel_name);
                         // channels.insert(std::make_pair(channel_name,chan));
-                        subscriptions.insert(std::make_pair(channel_name, subscriptionId));
+                        subscriptions.insert({channel_name, subscriptionId});
                         IncreamentSubId();
                     }
                 }
@@ -104,7 +104,6 @@ void InputStream::run(ConnectionHandler &connection)
                 }
                 else
                 {
-
                     string exit_command = "UNSUBSCRIBE";
                     int receipt = connection.produceReceipt(exit_command);
                     string channel_name = input[1];
@@ -114,7 +113,7 @@ void InputStream::run(ConnectionHandler &connection)
                         int subId = it->second;
                         map<string, string> headers;
                         headers.insert({"id", std::to_string(subId)});
-                        headers.insert({"reciept", std::to_string(receipt)});
+                        headers.insert({"receipt", std::to_string(receipt)});
                         StompFrame frame(exit_command, headers, "");
                         string output = frame.createFrame();
                         cout<<output<<endl;
@@ -126,6 +125,7 @@ void InputStream::run(ConnectionHandler &connection)
                         }
                         else
                         {
+                            subscriptions.erase(channel_name);
                             // channels.erase(channel_name);
                         }
                     }

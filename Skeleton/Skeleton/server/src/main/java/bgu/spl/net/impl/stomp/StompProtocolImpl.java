@@ -26,6 +26,7 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
         System.out.println(message); //Printing the received frame
         StompFrame frame = new StompFrame(message); //Creating a StompFrame object using the constructor we built
         shouldTerminate = (frame.getCommand().equals("DISCONNECT"));
+        System.out.println(frame.toString());
         if(frame.getCommand().equals("CONNECT")) { //Client trying to connect to a user
             Map<String, String> frameHeaders = frame.getHeaders();
             String login = frameHeaders.get("login");
@@ -91,6 +92,7 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
             String subscriptionID = frameHeaders.get("id");
             boolean done = activeConnections.removeChannelSubscription(Integer.parseInt(subscriptionID), activeConnections.getConnection(connectionID)); //Trying to remove the user from the requested subscription
             if (done) { //Managed to remove the subscription
+                System.out.println(activeConnections.toStringChannels());
                 Map<String, String> outputHeaders = new HashMap<>();
                 outputHeaders.put("receipt-id", receiptID);
                 StompFrame outputFrame = new StompFrame("RECEIPT", outputHeaders, "");
@@ -119,6 +121,7 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
             
         }
         else if (frame.getCommand().equals("SUBSCRIBE")) { //Trying to add the user to the requested subscription
+            System.out.println(activeConnections.toStringChannels());
             Map<String, String> frameHeaders = frame.getHeaders();
             String receiptID = frameHeaders.get("receipt");
             String subscriptionID = frameHeaders.get("id");

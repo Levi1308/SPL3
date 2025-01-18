@@ -25,4 +25,9 @@ public interface Connections<T> {
     boolean userConnectedAlready(String login);
 
     void removeConnection(int connectionID);
+    public String toStringActiveClients();
+     
+    public String toStringChannels();
+       
+    public String toStringUsers();
 }

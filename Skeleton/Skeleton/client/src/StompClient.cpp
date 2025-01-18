@@ -66,6 +66,7 @@ void Login(ConnectionHandler &connection)
 */
 int main (int argc, char *argv[])
 {
+    std::cerr << "Enter client"<< std::endl;
     const short bufsize = 1024;
     char buf[bufsize];
     /* Receiving the first command - before creating the connection. If the connection is a valid login command - create the connection & the threads of the keyboard and server responses */
