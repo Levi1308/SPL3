@@ -426,6 +426,7 @@ void StompProtocol::run_keyboard()
                 } else {
                 
                     if (input.size() == 4) {
+                        loggedIn = true;
                         string command = "CONNECT";
                         map<string, string> headers;
                         headers.insert({ "accept-version", "1.2" });
@@ -436,7 +437,7 @@ void StompProtocol::run_keyboard()
                         string output = frame.createFrame();
                         connection.connectUser(input[2]);
                         connection.sendFrame(output);
-                        loggedIn = true;
+                        
 
                     }
                 }
