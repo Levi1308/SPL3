@@ -1,7 +1,7 @@
 #include "StompProtocol.h"
 #include "../include/event.h"
 #include <iostream>
-#include <sstream>  // For stringstream operations
+#include <sstream> // For stringstream operations
 #include "keyboardInput.h"
 #include <stdexcept>
 #include <iostream>
@@ -20,68 +20,74 @@
 #include "Channel.h"
 #include <thread>
 
-
 using namespace std;
 
-
-StompProtocol::StompProtocol(ConnectionHandler& conn): terminateKeyboard(false), terminateServerResponses(false),
-connection(conn), channels(), subscriptionId(0), subscriptions(), loggedIn(true)
+StompProtocol::StompProtocol(ConnectionHandler &conn) : terminateKeyboard(false), terminateServerResponses(false),
+                                                        connection(conn), subscriptionId(0), subscriptions(), loggedIn(true), cv(), cvMutex()
 {
-    
 }
 
-void StompProtocol::run()
+void StompProtocol::runServerInput()
 {
-    while (!terminateServerResponses) {
-        
+    while (!terminateServerResponses)
+    {
+
         std::unique_lock<std::mutex> lock(cvMutex);
 
-        cv.wait(lock, [this] { return loggedIn ; });
+        cv.wait(lock, [this]
+                { return loggedIn; });
 
         lock.unlock();
-    
+
         std::string answer;
-        bool hasAnswered = connection.getLine(answer); //Receiving a response from the server
-        if (!hasAnswered) { //If the server connection was closed and no response receieved - close the client
-            std::cout << "Disconnected. Exiting...\n" << std::endl;
+        bool hasAnswered = connection.getLine(answer); // Receiving a response from the server
+        if (!hasAnswered)
+        { // If the server connection was closed and no response receieved - close the client
+            std::cout << "Disconnected. Exiting...\n"
+                      << std::endl;
             terminateKeyboard = true;
             break;
         }
 
-        if(hasAnswered) { //If a response from the server received
+        if (hasAnswered)
+        { // If a response from the server received
             StompFrame frame(answer);
             cout << answer;
-            if (frame.getCommand() == "CONNECTED") {
+            if (frame.getCommand() == "CONNECTED")
+            {
                 cout << "Login succesful" << endl;
-            }        
-             if (frame.getCommand() == "RECEIPT") {
+            }
+            if (frame.getCommand() == "RECEIPT")
+            {
                 map<string, string> headers = frame.getHeaders();
                 string receiptID = headers.find("receipt-id")->second;
                 string receiptCOMMAND = connection.findReceiptCommand(receiptID);
-                if (receiptCOMMAND == "DISCONNECT") { //If the receipt received is for a DISCONNECT frame - close the connection
+                if (receiptCOMMAND == "DISCONNECT")
+                { // If the receipt received is for a DISCONNECT frame - close the connection
                     cout << "Logged out" << endl;
                     cout << "RECEIPT" << endl;
-                    cout << "recipet-id:"+ receiptID<< endl;
+                    cout << "recipet-id:" + receiptID << endl;
                     loggedIn = false;
                     std::lock_guard<std::mutex> lock(cvMutex);
                 }
                 cv.notify_all();
             }
-            else if (frame.getCommand() == "ERROR") {
+            else if (frame.getCommand() == "ERROR")
+            {
                 terminateKeyboard = true;
                 terminateServerResponses = true;
                 connection.close();
-                
             }
-            else if (frame.getCommand() == "MESSAGE") { //If a message was received - a user sent a report and it needed to be saved
+            else if (frame.getCommand() == "MESSAGE")
+            { // If a message was received - a user sent a report and it needed to be saved
                 string report = frame.getBody();
-                vector<string> lines = split_str(report,'\n');
+                vector<string> lines = split_str(report, '\n');
                 string userLine = lines[0];
                 int index = userLine.find(':') + 1;
                 string user = userLine.substr(index);
-                Event object = parseEventReport(report);
-                string channel_name = object.get_channel_name();
-                connection.addReport(user, channel_name, object);
+                Event event = parseEventReport(report);
+                string channel_name = event.get_channel_name();
+                connection.addReport(user, channel_name, event);
             }
         }
     }
@@ -114,10 +120,10 @@ vector<string> StompProtocol::split(string line, char delimiter)
             line = line.substr(i + 1);
     }
     return parts;
-
 }
 
-Event StompProtocol::parseEventReport(string report) {
+Event StompProtocol::parseEventReport(string report)
+{
     vector<string> parts = StompProtocol::split(report, '\n');
     string user, channel_name, city, event_name, time, description;
     map<string, string> general_information;
@@ -125,35 +131,49 @@ Event StompProtocol::parseEventReport(string report) {
 
     string previousLine;
 
-    for (const string& line : parts) {
-        if (details) {
-            if (line.find("channel name:") != string::npos) {
+    for (const string &line : parts)
+    {
+        if (details)
+        {
+            if (line.find("channel name:") != string::npos)
+            {
                 size_t index = line.find(':');
                 channel_name = line.substr(index + 1);
-            } else if (line.find("city:") != string::npos) {
+            }
+            else if (line.find("city:") != string::npos)
+            {
                 size_t index = line.find(':');
                 city = line.substr(index + 1);
-            } else if (line.find("event name:") != string::npos) {
+            }
+            else if (line.find("event name:") != string::npos)
+            {
                 size_t index = line.find(':');
                 event_name = line.substr(index + 1);
-            } else if (line.find("time:") != string::npos) {
+            }
+            else if (line.find("data time:") != string::npos)
+            {
                 size_t index = line.find(':');
                 time = line.substr(index + 1);
             }
         }
 
-        if (line == "general information:") {
+        if (line == "general information:")
+        {
             details = false;
         }
 
-        if (general) {
+        if (general)
+        {
             size_t index = line.find(':');
-            if (index != string::npos) {
+            if (index != string::npos)
+            {
                 string header = line.substr(0, index);
                 string value = line.substr(index + 1);
                 general_information[header] = value;
             }
-        } else if (previousLine == "description:") {
+        }
+        else if (previousLine == "description:")
+        {
             description = line;
         }
 
@@ -161,7 +181,8 @@ Event StompProtocol::parseEventReport(string report) {
     }
 
     // Validate the required fields
-    if (channel_name.empty() || city.empty() || event_name.empty() || time.empty() || description.empty()) {
+    if (channel_name.empty() || city.empty() || event_name.empty() || time.empty() || description.empty())
+    {
         throw runtime_error("Missing required fields in the report.");
     }
 
@@ -189,7 +210,7 @@ Command getCommand(const std::string &cmdStr)
     return Command::UNKNOWN;
 }
 
-void StompProtocol::run_keyboard()
+void StompProtocol::runkeyboardInput()
 {
 
     std::string line;
@@ -201,6 +222,7 @@ void StompProtocol::run_keyboard()
         // Exit if the user types "exit_program"
         if (line == "exit_program")
         {
+            terminateKeyboard = true;
             break;
         }
 
@@ -211,238 +233,256 @@ void StompProtocol::run_keyboard()
             Command command = getCommand(input[0]); // Convert first word to enum
 
             // Process commands using if-else instead of switch
-            if (command == Command::JOIN )
+            if (command == Command::JOIN)
             {
-                if(loggedIn){
-                if (input.size() < 2)
+                if (loggedIn)
                 {
-                    std::cout << "Error: join requires a channel name." << std::endl;
-                }
-                else
-                {
-                    string join_command = "SUBSCRIBE";
-                    string channel_name = input[1];
-                    int receipt = connection.produceReceipt(join_command);
-                    map<string, string> headers;
-                    headers.insert({"destination", channel_name});
-                    headers.insert({"id", std::to_string(subscriptionId)});
-                    headers.insert({"receipt", std::to_string(receipt)});
-
-                    StompFrame frame(join_command, headers, "");
-                    string output = frame.createFrame();
-                    cout<<output<<endl;
-                    // Send the subscription message
-                    if (!connection.sendFrame(output))
+                    if (input.size() < 2)
                     {
-                        std::cerr << "Failed to send subscription message for channel:" << channel_name << std::endl;
-                        continue;
+                        std::cout << "Error: join requires a channel name." << std::endl;
                     }
                     else
                     {
-                        // Channel chan(channel_name);
-                        // channels.insert(std::make_pair(channel_name,chan));
-                        subscriptions.insert({channel_name, subscriptionId});
-                        IncreamentSubId();
+                        string join_command = "SUBSCRIBE";
+                        string channel_name = input[1];
+                        int receipt = connection.produceReceipt(join_command);
+                        map<string, string> headers;
+                        headers.insert({"destination", channel_name});
+                        headers.insert({"id", std::to_string(subscriptionId)});
+                        headers.insert({"receipt", std::to_string(receipt)});
+
+                        StompFrame frame(join_command, headers, "");
+                        string output = frame.createFrame();
+                        cout << output << endl;
+                        // Send the subscription message
+                        if (!connection.sendFrame(output))
+                        {
+                            std::cerr << "Failed to send subscription message for channel:" << channel_name << std::endl;
+                            continue;
+                        }
+                        else
+                        {
+                            subscriptions.insert({channel_name, subscriptionId});
+                            IncreamentSubId();
+                        }
                     }
                 }
-                }
-                else{
-                    cout<<"Login first"<<endl;
+                else
+                {
+                    cout << "Login first" << endl;
                 }
             }
             else if (command == Command::EXIT)
             {
-                if(loggedIn){
-                if (input.size() < 2)
+                if (loggedIn)
                 {
-                    std::cout << "Error: exit requires a channel name." << std::endl;
-                    //break;
-                }
-                else
-                {
-                    string exit_command = "UNSUBSCRIBE";
-                    int receipt = connection.produceReceipt(exit_command);
-                    string channel_name = input[1];
-                    auto it = subscriptions.find(channel_name);
-                    if (it != subscriptions.end())
+                    if (input.size() < 2)
                     {
-                        int subId = it->second;
-                        map<string, string> headers;
-                        headers.insert({"id", std::to_string(subId)});
-                        headers.insert({"receipt", std::to_string(receipt)});
-                        StompFrame frame(exit_command, headers, "");
-                        string output = frame.createFrame();
-                        cout<<output<<endl;
-                        // Send the subscription message
-                        if (!connection.sendFrame(output))
-                        {
-                            std::cerr << "Failed to send unsubscription message for channel:" << channel_name << std::endl;
-                            //break;
-                        }
-                        else
-                        {
-                            subscriptions.erase(channel_name);
-                            // channels.erase(channel_name);
-                        }
+                        std::cout << "Error: exit requires a channel name." << std::endl;
+                        // break;
                     }
                     else
                     {
-                        std::cout << "channel not found!" << std::endl;
-                        //break;
+                        string exit_command = "UNSUBSCRIBE";
+                        int receipt = connection.produceReceipt(exit_command);
+                        string channel_name = input[1];
+                        auto it = subscriptions.find(channel_name);
+                        if (it != subscriptions.end())
+                        {
+                            int subId = it->second;
+                            map<string, string> headers;
+                            headers.insert({"id", std::to_string(subId)});
+                            headers.insert({"receipt", std::to_string(receipt)});
+                            StompFrame frame(exit_command, headers, "");
+                            string output = frame.createFrame();
+                            cout << output << endl;
+                            // Send the subscription message
+                            if (!connection.sendFrame(output))
+                            {
+                                std::cerr << "Failed to send unsubscription message for channel:" << channel_name << std::endl;
+                                // break;
+                            }
+                            else
+                            {
+                                subscriptions.erase(channel_name);
+                            
+                            }
+                        }
+                        else
+                        {
+                            std::cout << "channel not found!" << std::endl;
+                            // break;
+                        }
                     }
                 }
-                }
-                else{
-                    cout<<"Login first"<<endl;
+                else
+                {
+                    cout << "Login first" << endl;
                 }
             }
             else if (command == Command::REPORT)
             {
-                if(loggedIn){
-                if (input.size() < 2)
+                if (loggedIn)
                 {
-                    std::cout << "Error: report requires a file path." << std::endl;
-                }
-                else
-                { 
-                    string report_command = "REPORT";
-                    map<string, string> headers;
-                    string file_path = input[1];
-                    // Parse the events file
-                    names_and_events parsedData = parseEventsFile(file_path);
-                    // Extract channel name and events
-                    std::string channelName = parsedData.channel_name;
-                    std::vector<Event> events = parsedData.events;
-                    for (Event e : events)
+                    if (input.size() < 2)
                     {
-                        headers.insert({"user", connection.getLoginedUser()});
-                        headers.insert({"city", e.get_city()});
-                        headers.insert({"event name", e.get_name()});
-                        headers.insert({"date time", std::to_string(e.get_date_time())});
-                        headers.insert({"general information", ""});
-                        headers.insert({"general information", ""});
-                        const auto &general_info = e.get_general_information();
-
-                        auto it = general_info.find("active");
-                        if (it != general_info.end())
+                        std::cout << "Error: report requires a file path." << std::endl;
+                    }
+                    else
+                    {
+                        string report_command = "SEND";
+                        map<string, string> headers;
+                        string file_path = input[1];
+                        // Parse the events file
+                        names_and_events parsedData = parseEventsFile(file_path);
+                        // Extract channel name and events
+                        std::string channelName = parsedData.channel_name;
+                        std::vector<Event> events = parsedData.events;
+                        
+                        for (Event e : events)
                         {
-                            headers.insert({"active", it->second});
-                            it = general_info.find("forces_arrival_at_scene");
+                            headers.insert({"destination",channelName });
+                            cout<<"Started for loop"<<endl;
+                            string body="user:"+connection.getLoginedUser()+"\n";
+                            body+="city:"+e.get_city()+"\n";
+                            body+="event name:"+ e.get_name()+"\n";
+                            body+="date time:"+ std::to_string(e.get_date_time())+"\n";
+                            body+="general information:\n";
+                            
+                            const auto &general_info = e.get_general_information();
+
+                            auto it = general_info.find("active");
                             if (it != general_info.end())
                             {
-                                headers.insert({"forces_arrival_at_scene", it->second});
-                                headers.insert({"description", e.get_description()});
-                                StompFrame frame(report_command, headers, "");
-                                string output = frame.createFrame();
-                                cout<<output<<endl;
-                                if (!connection.sendFrame(output))
+                                body+="\tactive:"+it->second+"\n";
+
+                                it = general_info.find("forces_arrival_at_scene");
+                                if (it != general_info.end())
                                 {
-                                    std::cerr << "Failed to send unsubscription message for channel:" << channelName << std::endl;
-                                    //break;
+                                    body+="\tforces_arrival_at_scene:"+ it->second+"\n";
+                                    body+="description:\n"+ e.get_description()+"\n";
+                                    StompFrame frame(report_command, headers, body);
+                                    string output = frame.createFrame();
+                                    cout << output << endl;
+                                    if (!connection.sendFrame(output))
+                                    {
+                                        std::cerr << "Failed to send unsubscription message for channel:" << channelName << std::endl;
+                                        // break;
+                                    }
+                                    else
+                                    {
+                                        std::cout << "Report send correctly" << std::endl;
+                                    }
                                 }
                                 else
-                                {
-                                    std::cout << "Report send correctly" << std::endl;
-                                }
+                                    std::cout << "Json doesn't include forces_arrival_at_scene" << std::endl;
+                                // break;
                             }
                             else
-                                std::cout << "Json doesn't include forces_arrival_at_scene" << std::endl;
-                            // break;
-                        }
-                        else
-                        {
-                            std::cout << "Json doesn't include active" << std::endl;
-                            // break;
+                            {
+                                std::cout << "Json doesn't include active" << std::endl;
+                                // break;
+                            }
+                            headers.clear();
                         }
                     }
                 }
-                
-                }
-                else{
-                    cout<<"Login first"<<endl;
+                else
+                {
+                    cout << "Login first" << endl;
                 }
             }
             else if (command == Command::SUMMARY)
             {
-                if(loggedIn){
-                if (input.size() < 4)
+                if (loggedIn)
                 {
-                    std::cout << "Error: summary requires channel name, user, and file path." << std::endl;
-                }
-                else
-                {
-                /* string logout_command = "DISCONNECT";
-                int receipt = connection.produceReceipt(logout_command);
-                map<string, string> headers;
-                headers.insert({ "receipt", to_string(receipt)});
-                StompFrame frame(logout_command, headers, "");
-                string output = frame.createFrame();
-                connection.sendFrame(output);
-                terminateKeyboard = true;
-                */
-                    std::string channel_name = input[1];
-                    std::string user = input[2];
-                    std::string file_path = input[3];
-                    auto it = channels.find(channel_name);
-                    if (it != channels.end())
+                    if (input.size() < 4)
                     {
-                        Channel temp = it->second; // Assuming channels is a map with channel_name as the key
-
-                        // Retrieve events by the user
-                        std::vector<Event> events = temp.getEvents_ByUser(user);
-
-                        // Now you can process the events or write them to a file
-                        writeToFile(file_path, channel_name, events); // Assuming `writeToFile` is implemented as above
+                        std::cout << "Error: summary requires channel name, user, and file path." << std::endl;
                     }
                     else
                     {
-                        std::cerr << "Channel not found: " << channel_name << std::endl;
+                        
+                        std::string channel_name = input[1];
+                        std::string user = input[2];
+                        std::string file_path = input[3];
+                        auto it = subscriptions.find(channel_name);
+                        if (it != subscriptions.end())
+                        {
+                          std::vector<Event> events = connection.getEventbyUser(channel_name,user);
+                            // Now you can process the events or write them to a file
+                        if(!events.empty())
+                           writeToFile(file_path, channel_name, events); // Assuming `writeToFile` is implemented as above
+                        else
+                            cout << "No Events to report" << endl;
+                        }
+                        else
+                        {
+                            std::cerr << "Channel not found: " << channel_name << std::endl;
+                        }
                     }
                 }
-                }
-                else{
-                    cout<<"Login first"<<endl;
+                else
+                {
+                    cout << "Login first" << endl;
                 }
             }
             else if (command == Command::LOGOUT)
             {
-                if(loggedIn){
-                string logout_command = "DISCONNECT";
-                int receipt = connection.produceReceipt(logout_command);
-                map<string, string> headers;
-                headers.insert({"receipt", to_string(receipt)});
-                StompFrame frame(logout_command, headers, "");
-                string output = frame.createFrame();
-                connection.sendFrame(output); 
-                subscriptions.clear();
+                if (loggedIn)
+                {
+                    string logout_command = "DISCONNECT";
+                    int receipt = connection.produceReceipt(logout_command);
+                    map<string, string> headers;
+                    headers.insert({"receipt", to_string(receipt)});
+                    StompFrame frame(logout_command, headers, "");
+                    string output = frame.createFrame();
+                    cout<<output<<endl;
+                    if(connection.sendFrame(output))
+                        subscriptions.clear();
+                    else{
+                        cout << "Couldnot log out" << endl;
+                    }
                 }
-                else{
-                    cout<<"Login first"<<endl;
+                else
+                {
+                    cout << "Login first" << endl;
                 }
             }
-            else if (command == Command::LOGIN) {
-                if (loggedIn) {
+            else if (command == Command::LOGIN)
+            {
+                if (loggedIn)
+                {
                     cout << "The client is already logged in. Log out before trying again." << endl;
-                } else {
-                
-                    if (input.size() == 4) {
-                        loggedIn = true;
-                        string command = "CONNECT";
-                        map<string, string> headers;
-                        headers.insert({ "accept-version", "1.2" });
-                        headers.insert({ "host", "stomp.cs.bgu.ac.il" });
-                        headers.insert({ "login", input[2] });
-                        headers.insert({ "passcode", input[3] });
-                        StompFrame frame(command, headers, "");
-                        string output = frame.createFrame();
-                        connection.connectUser(input[2]);
-                        connection.sendFrame(output);
-                        
-
+                }
+                else
+                {
+                    
+                    if (input.size() == 4)
+                    {
+                        while (!loggedIn)
+                        {
+                            string command = "CONNECT";
+                            map<string, string> headers;
+                            headers.insert({"accept-version", "1.2"});
+                            headers.insert({"host", "stomp.cs.bgu.ac.il"});
+                            headers.insert({"login", input[2]});
+                            headers.insert({"passcode", input[3]});
+                            StompFrame frame(command, headers, "");
+                            string output = frame.createFrame();
+                            cout << output << endl;
+                            connection.connectUser(input[2]);
+                            if (connection.sendFrame(output))
+                                loggedIn = true;
+                            else
+                            {
+                            std::getline(std::cin, line);
+                            std::vector<std::string> input = split_str(line, ' ');
+                            }
+                        }
                     }
                 }
             }
-
             else
             {
                 std::cout << "Command is invalid. Enter a new command" << std::endl;
@@ -508,4 +548,3 @@ void StompProtocol::writeToFile(const std::string &file_path, const std::string 
     file.close();
     std::cout << "File written successfully to: " << file_path << std::endl;
 }
-

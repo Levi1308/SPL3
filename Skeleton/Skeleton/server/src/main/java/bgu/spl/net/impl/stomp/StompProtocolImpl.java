@@ -23,7 +23,6 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
     }
 
     public void process(String message) { //Receiving a frame & processing it
-        System.out.println(message); //Printing the received frame
         StompFrame frame = new StompFrame(message); //Creating a StompFrame object using the constructor we built
         shouldTerminate = (frame.getCommand().equals("DISCONNECT"));
         System.out.println(frame.toString());
@@ -157,7 +156,7 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
         }
         else if (frame.getCommand().equals("SEND")) { //Got a report from a user to a specific channel
             Map<String, String> frameHeaders = frame.getHeaders();
-            String channel = frameHeaders.get("destination").substring(1); //without the '/' in the beginning of the channel
+            String channel = frameHeaders.get("destination"); 
             int subscriptionID = activeConnections.getUserSubID(channel, connectionID);
             if (subscriptionID == -1) { //If the user isn't subscribed to the sent report's channel
                 Map<String, String> outputHeaders = new HashMap<>();
@@ -178,14 +177,17 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 catch (IOException exception) {}
             }
             else { //The user is subscribed to the reported channel
+                
                 String bodyMessage = frame.getBody();
+                System.out.println("body-"+bodyMessage);
                 Map<String, String> outputHeaders = new HashMap<>();
                 outputHeaders.put("subscription", "" + subscriptionID);
                 outputHeaders.put("message-id", "" + messageID);
-                outputHeaders.put("destination", "/" + channel);
+                outputHeaders.put("destination",channel);
                 StompFrame outputFrame = new StompFrame("MESSAGE", outputHeaders, bodyMessage);
                 String output = outputFrame.createFrame();
                 messageID++;
+                System.out.println(output);
                 activeConnections.send(channel, output); //Sending the report to all the users subscribed to the channel
             }
 

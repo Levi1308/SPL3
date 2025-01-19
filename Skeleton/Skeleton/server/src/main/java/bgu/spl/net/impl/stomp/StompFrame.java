@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class StompFrame<T> {
-    private String STOMPCommand; // MESSAGE / SEND / CONNECT / DISCONNECT / SUBSCRIBE / UNSUBSCRIBE
+    private String STOMPCommand; 
     private Map<String, String> headers;
     private String body;
 
@@ -42,6 +42,8 @@ public class StompFrame<T> {
             }
             body = bodyString;
         }
+        else
+            body="";
     }
     StompFrame(String command, Map<String, String> headers, String body) {
         this.STOMPCommand = command;
@@ -105,11 +107,12 @@ public class StompFrame<T> {
 
     @Override
     public String toString() {
-        String output=STOMPCommand+"\n";
+        String output="command:"+STOMPCommand+"\n";
+        output+="headers:\n";
         for (Map.Entry<String, String> entry : headers.entrySet()) {
             output+=entry.getKey() + ": " + entry.getValue()+"\n";
         }
-        output+=body;
+        output+="body\n" +body;
         return output;
     }
 }

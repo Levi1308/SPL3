@@ -28,7 +28,6 @@ private:
     bool terminateKeyboard;
     bool terminateServerResponses;
     ConnectionHandler &connection;  
-    std::map<std::string,Channel> channels;
     int subscriptionId;
     std::map<std::string,int> subscriptions;
     bool loggedIn;
@@ -38,10 +37,10 @@ private:
 
 public:
     StompProtocol(ConnectionHandler& conn);
-    void run();
+    void runServerInput();
     Event parseEventReport(string report);
     vector<string> static split(string line, char delimiter);
-    void run_keyboard();
+    void runkeyboardInput();
     void IncreamentSubId();
     void writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events);
 };

@@ -12,7 +12,7 @@ using std::string;
 
 ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_),channels(),  currentUser(), logined(false),
-																 receiptNumber(0), receipts(), subscriptions() {}
+																 receiptNumber(0), receipts() {}
 
 
 ConnectionHandler::~ConnectionHandler() {
@@ -131,7 +131,6 @@ void ConnectionHandler::resetConnection()
 {
 	currentUser = "";
 	receiptNumber = 0;
-	subscriptions.clear();
 	receipts.clear();
 	channels.clear();
 	logined = false;
@@ -151,26 +150,7 @@ string ConnectionHandler::findReceiptCommand(string receiptID) {
 	return receipts.find(receiptID)->second;
 }
 
-int ConnectionHandler::getSubID(string channel) {
-	if (subscriptions.find(channel) != subscriptions.end()) {
-		return subscriptions.find(channel)->second;
-	}
-	else {
-		return -1;
-	}
-}
 
-int ConnectionHandler::insertSub(string channel) {
-	int subID;
-	if (subscriptions.empty()) {
-		subID = 0;
-	}
-	else {
-		subID = subscriptions.size();
-	}
-	subscriptions.insert({channel, subID});
-	return subID;
-}
 
 int ConnectionHandler::produceReceipt(string command) {
 	int receipt = receiptNumber;
@@ -198,6 +178,14 @@ bool ConnectionHandler::sendFrame(std::string & frame) {
 	return sendFrameAscii(frame, '\0');
 }
 
+vector<Event> ConnectionHandler::getEventbyUser(std::string channelname,std::string user){
+	auto it=channels.find(channelname);
+	if(it!=channels.end())
+	{
+		return it->second.getEvents_ByUser(user);
+	}
+	return vector<Event>();
+}
 
 
 

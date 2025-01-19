@@ -9,112 +9,71 @@
 #include <stdlib.h>
 #include <thread>
 
-
-/*
-void Login(ConnectionHandler &connection)
+int main(int argc, char *argv[])
 {
-    std::string line;
-    bool flag = false;
-
-    while (!flag)
+    std::cerr << "Enter client" << std::endl;
+    while (true)
     {
-        std::cout << "Enter login command (e.g., 'login hostname:port'):\n";
-        std::getline(std::cin, line);
-
-        std::vector<std::string> input = keyboard.split_str(line, ' ');
-
-        if (input.size() > 1 && input[0] == "login")
+        const short bufsize = 1024;
+        char buf[bufsize];
+        /* Receiving the first command - before creating the connection. If the connection is a valid login command - create the connection & the threads of the keyboard and server responses */
+        std::cin.getline(buf, bufsize);
+        std::string command(buf);
+        vector<string> partsOfCommand = StompProtocol::split(command, ' ');
+        if (partsOfCommand[0] == "login")
         {
-            try
+            cout << "" << endl;
+            if (partsOfCommand.size() == 4)
             {
-                // Split host and port
-                std::vector<std::string> host_port = keyboard.split_str(input[1], ':');
-                if (host_port.size() != 2)
+                string host = partsOfCommand[1].substr(0, partsOfCommand[1].find(':'));
+                short port = stoi(partsOfCommand[1].substr(partsOfCommand[1].find(':') + 1));
+                ConnectionHandler connectionHandler(host, port);
+                if (!connectionHandler.connect())
                 {
-                    throw std::invalid_argument("Invalid format. Use hostname:port.");
-                }
-
-                // Convert port to short
-                short port = static_cast<short>(std::stoi(host_port[1]));
-
-                // Update the existing `ConnectionHandler` instance
-                connection = ConnectionHandler(host_port[0], port);
-
-                // Attempt to connect
-                if (connection.connect())
-                {
-                    std::cout << "Login successful!\n";
-                    flag = true; // Exit loop on successful login
+                    std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
                 }
                 else
                 {
-                    std::cerr << "Failed to connect. Please try again.\n";
+                    string command = "CONNECT";
+                    map<string, string> headers;
+                    headers.insert({"accept-version", "1.2"});
+                    headers.insert({"host", "stomp.cs.bgu.ac.il"});
+                    headers.insert({"login", partsOfCommand[2]});
+                    headers.insert({"passcode", partsOfCommand[3]});
+                    StompFrame frame(command, headers, "");
+                    string output = frame.createFrame();
+                    cout<<output<<endl;
+                    connectionHandler.connectUser(partsOfCommand[2]);
+                    if (connectionHandler.sendFrame(output))
+                    {
+                        try
+                        {
+
+                            StompProtocol protocol(connectionHandler);
+                            // Start threads for input and server handling
+                            std::thread serverThread(&StompProtocol::runServerInput, &protocol);
+                            protocol.runkeyboardInput();
+
+                            // Join threads
+                            serverThread.join();
+                            // keyboardThread.join();
+                            return 0;
+                        }
+                        catch (const std::exception &e)
+                        {
+                            cout << "An error received, disconnecting.." << endl;
+                        }
+                    }
+                    else
+                    {
+                        cout << "Could not loggin try again" << endl;
+                    }
                 }
             }
-            catch (const std::exception &e)
+            else
             {
-                std::cerr << "Error: " << e.what() << "\nPlease try again.\n";
+                cout << "login command needs 3 arguments: {port} {user} {passcode}" << endl;
             }
-        }
-        else
-        {
-            std::cerr << "Invalid command. Use 'login hostname:port'.\n";
-        }
-    }
-}
-*/
-int main (int argc, char *argv[])
-{
-    std::cerr << "Enter client"<< std::endl;
-    const short bufsize = 1024;
-    char buf[bufsize];
-    /* Receiving the first command - before creating the connection. If the connection is a valid login command - create the connection & the threads of the keyboard and server responses */
-    std::cin.getline(buf, bufsize);
-    std::string command(buf);
-    vector<string> partsOfCommand = StompProtocol::split(command, ' ');
-    if (partsOfCommand[0] == "login") {
-        cout << "" << endl;
-        if (partsOfCommand.size() == 4) {
-            
-            string host = partsOfCommand[1].substr(0, partsOfCommand[1].find(':'));
-            short port = stoi(partsOfCommand[1].substr(partsOfCommand[1].find(':') + 1));
-            ConnectionHandler connectionHandler(host, port);
-            if (!connectionHandler.connect()) {
-                std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
-                return 1;
-            }
-            string command = "CONNECT";
-            map<string, string> headers;
-            headers.insert({ "accept-version", "1.2" });
-            headers.insert({ "host", "stomp.cs.bgu.ac.il" });
-            headers.insert({ "login", partsOfCommand[2] });
-            headers.insert({ "passcode", partsOfCommand[3] });
-            StompFrame frame(command, headers, "");
-            string output = frame.createFrame();
-            connectionHandler.connectUser(partsOfCommand[2]);
-            connectionHandler.sendFrame(output);
-
-            try{
-            
-               StompProtocol protocol(connectionHandler);
-               // Start threads for input and server handling
-               std::thread serverThread(&StompProtocol::run, &protocol);
-               std::thread keyboardThread(&StompProtocol::run_keyboard, &protocol);
-               
-
-              // Join threads
-              serverThread.join();
-              keyboardThread.join();
-               
-        
-            }
-              catch (const std::exception& e) {
-                cout << "An error received, disconnecting.." << endl;
-            }
-      
-        }
-        else{
-            cout << "login command needs 3 arguments: {port} {user} {passcode}" <<endl;
         }
     }
     return 0;

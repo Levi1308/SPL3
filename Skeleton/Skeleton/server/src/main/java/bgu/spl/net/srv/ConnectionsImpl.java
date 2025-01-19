@@ -37,11 +37,12 @@ public class ConnectionsImpl <T> implements Connections <T> {
 
     public void disconnect(int connectionId) { //Disconnecting a client
         loggedInUsers.values().remove(connectionId); //Removing the user connected to the client from the loggedInUsers
+        
         for (String channel : channelsSubscriptions.keySet()) { //Going over the channels & removing the user from every channel it subscribed to
             Map<ConnectionHandler<T>, Integer> subs = channelsSubscriptions.get(channel);
             for (ConnectionHandler<T> conn : subs.keySet()) {
                 if(conn == activeClients.get(connectionID)) {
-                    channelsSubscriptions.get(channel).remove(conn);
+                    subs.remove(conn);
                 }
                 
             }
