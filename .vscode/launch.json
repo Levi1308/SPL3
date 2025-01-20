@@ -4,7 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
+        {
+            "type": "java",
+            "name": "StompServer",
+            "request": "launch",
+            "mainClass": "bgu.spl.net.impl.stomp.StompServer",
+            "projectName": "server"
+        },
         {
             "type": "java",
             "name": "Launch EchoServer",
@@ -43,7 +49,10 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/client/bin/EchoClient",
-            "args": ["127.0.0.1", "7777"],
+            "args": [
+                "127.0.0.1",
+                "7777"
+            ],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

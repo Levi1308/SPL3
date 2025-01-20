@@ -81,13 +81,20 @@ void StompProtocol::runServerInput()
             else if (frame.getCommand() == "MESSAGE")
             { // If a message was received - a user sent a report and it needed to be saved
                 string report = frame.getBody();
-                vector<string> lines = split_str(report, '\n');
-                string userLine = lines[0];
-                int index = userLine.find(':') + 1;
-                string user = userLine.substr(index);
-                Event event = parseEventReport(report);
-                string channel_name = event.get_channel_name();
-                connection.addReport(user, channel_name, event);
+                cout << "body:\n" + report << endl;
+                auto it = frame.getHeaders().find("destination");
+                if (it != frame.getHeaders().end())
+                {
+                    string channel_name = it->first;
+                    Event event = parseEventReport(report, channel_name);
+
+                    string user = event.get_name();
+                    connection.addReport(user, channel_name, event);
+                }
+                else
+                {
+                    cout << "Frame missing destination" << endl;
+                }
             }
         }
     }
@@ -122,74 +129,55 @@ vector<string> StompProtocol::split(string line, char delimiter)
     return parts;
 }
 
-Event StompProtocol::parseEventReport(string report)
+Event StompProtocol::parseEventReport(string report, string channelName)
 {
-    vector<string> parts = StompProtocol::split(report, '\n');
-    string user, channel_name, city, event_name, time, description;
-    map<string, string> general_information;
-    bool details = true, general = false;
+    std::vector<std::string> parts = split(report, '\n');
+    std::string user, city, eventName, time, description, active, forceArrive;
+    std::map<std::string, std::string> generalInformation;
 
-    string previousLine;
+    std::string previousLine;
 
-    for (const string &line : parts)
-    {
-        if (details)
-        {
-            if (line.find("channel name:") != string::npos)
-            {
-                size_t index = line.find(':');
-                channel_name = line.substr(index + 1);
-            }
-            else if (line.find("city:") != string::npos)
-            {
-                size_t index = line.find(':');
-                city = line.substr(index + 1);
-            }
-            else if (line.find("event name:") != string::npos)
-            {
-                size_t index = line.find(':');
-                event_name = line.substr(index + 1);
-            }
-            else if (line.find("data time:") != string::npos)
-            {
-                size_t index = line.find(':');
-                time = line.substr(index + 1);
-            }
+    for (const auto& line : parts) {
+        std::string trimmedLine = line;
+        trimmedLine.erase(0, trimmedLine.find_first_not_of(" \t")); // Trim leading whitespace
+        trimmedLine.erase(trimmedLine.find_last_not_of(" \t") + 1); // Trim trailing whitespace
+
+        if (trimmedLine.find("user:") == 0) {
+            user = trimmedLine.substr(trimmedLine.find(':') + 1);
+        } else if (trimmedLine.find("city:") == 0) {
+            city = trimmedLine.substr(trimmedLine.find(':') + 1);
+        } else if (trimmedLine.find("event name:") == 0) {
+            eventName = trimmedLine.substr(trimmedLine.find(':') + 1);
+        } else if (trimmedLine.find("date time:") == 0) {
+            time = trimmedLine.substr(trimmedLine.find(':') + 1);
+        } else if (trimmedLine.find("active:") == 0) {
+            active = trimmedLine.substr(trimmedLine.find(':') + 1);
+        } else if (trimmedLine.find("forces_arrival_at_scene:") == 0) {
+            forceArrive = trimmedLine.substr(trimmedLine.find(':') + 1);
+        } else if (previousLine == "description:") {
+            description = trimmedLine;
         }
-
-        if (line == "general information:")
-        {
-            details = false;
-        }
-
-        if (general)
-        {
-            size_t index = line.find(':');
-            if (index != string::npos)
-            {
-                string header = line.substr(0, index);
-                string value = line.substr(index + 1);
-                general_information[header] = value;
-            }
-        }
-        else if (previousLine == "description:")
-        {
-            description = line;
-        }
-
-        previousLine = line;
+        previousLine = trimmedLine;
     }
+
+    generalInformation["active"] = "\t"+active;
+    generalInformation["forces_arrival_at_scene"] = "\t"+forceArrive;
 
     // Validate the required fields
-    if (channel_name.empty() || city.empty() || event_name.empty() || time.empty() || description.empty())
-    {
-        throw runtime_error("Missing required fields in the report.");
+    if (user.empty() || city.empty() || eventName.empty() || time.empty() || description.empty() || generalInformation.empty()) {
+        throw std::runtime_error("Missing required fields in the report.");
     }
 
-    // Create and return the Event object
-    int date_time = stoi(time);
-    return Event(channel_name, city, event_name, date_time, description, general_information);
+    // Parse time to integer
+    int dateTime;
+    try {
+        dateTime = std::stoi(time);
+    } catch (const std::invalid_argument&) {
+        throw std::runtime_error("Invalid date time format in the report.");
+    }
+    return Event(channelName, city, eventName, dateTime, description, generalInformation);
 }
+
 // Map to associate string commands with enum values
 const std::unordered_map<std::string, Command> commandMap = {
     {"login", Command::LOGIN},
@@ -305,7 +293,6 @@ void StompProtocol::runkeyboardInput()
                             else
                             {
                                 subscriptions.erase(channel_name);
-                            
                             }
                         }
                         else
@@ -338,29 +325,29 @@ void StompProtocol::runkeyboardInput()
                         // Extract channel name and events
                         std::string channelName = parsedData.channel_name;
                         std::vector<Event> events = parsedData.events;
-                        
+
                         for (Event e : events)
                         {
-                            headers.insert({"destination",channelName });
-                            cout<<"Started for loop"<<endl;
-                            string body="user:"+connection.getLoginedUser()+"\n";
-                            body+="city:"+e.get_city()+"\n";
-                            body+="event name:"+ e.get_name()+"\n";
-                            body+="date time:"+ std::to_string(e.get_date_time())+"\n";
-                            body+="general information:\n";
-                            
+                            headers.insert({"destination", channelName});
+                            cout << "Started for loop" << endl;
+                            string body = "user:" + connection.getLoginedUser() + "\n";
+                            body += "city:" + e.get_city() + "\n";
+                            body += "event name:" + e.get_name() + "\n";
+                            body += "date time:" + std::to_string(e.get_date_time()) + "\n";
+                            body += "general information:\n";
+
                             const auto &general_info = e.get_general_information();
 
                             auto it = general_info.find("active");
                             if (it != general_info.end())
                             {
-                                body+="\tactive:"+it->second+"\n";
+                                body += "\tactive:" + it->second + "\n";
 
                                 it = general_info.find("forces_arrival_at_scene");
                                 if (it != general_info.end())
                                 {
-                                    body+="\tforces_arrival_at_scene:"+ it->second+"\n";
-                                    body+="description:\n"+ e.get_description()+"\n";
+                                    body += "\tforces_arrival_at_scene:" + it->second + "\n";
+                                    body += "description:\n" + e.get_description() + "\n";
                                     StompFrame frame(report_command, headers, body);
                                     string output = frame.createFrame();
                                     cout << output << endl;
@@ -402,19 +389,19 @@ void StompProtocol::runkeyboardInput()
                     }
                     else
                     {
-                        
+
                         std::string channel_name = input[1];
                         std::string user = input[2];
                         std::string file_path = input[3];
                         auto it = subscriptions.find(channel_name);
                         if (it != subscriptions.end())
                         {
-                          std::vector<Event> events = connection.getEventbyUser(channel_name,user);
+                            std::vector<Event> events = connection.getEventbyUser(channel_name, user);
                             // Now you can process the events or write them to a file
-                        if(!events.empty())
-                           writeToFile(file_path, channel_name, events); // Assuming `writeToFile` is implemented as above
-                        else
-                            cout << "No Events to report" << endl;
+                            if (!events.empty())
+                                writeToFile(file_path, channel_name, events); // Assuming `writeToFile` is implemented as above
+                            else
+                                cout << "No Events to report" << endl;
                         }
                         else
                         {
@@ -437,10 +424,11 @@ void StompProtocol::runkeyboardInput()
                     headers.insert({"receipt", to_string(receipt)});
                     StompFrame frame(logout_command, headers, "");
                     string output = frame.createFrame();
-                    cout<<output<<endl;
-                    if(connection.sendFrame(output))
+                    cout << output << endl;
+                    if (connection.sendFrame(output))
                         subscriptions.clear();
-                    else{
+                    else
+                    {
                         cout << "Couldnot log out" << endl;
                     }
                 }
@@ -457,7 +445,7 @@ void StompProtocol::runkeyboardInput()
                 }
                 else
                 {
-                    
+
                     if (input.size() == 4)
                     {
                         while (!loggedIn)
@@ -476,8 +464,8 @@ void StompProtocol::runkeyboardInput()
                                 loggedIn = true;
                             else
                             {
-                            std::getline(std::cin, line);
-                            std::vector<std::string> input = split_str(line, ' ');
+                                std::getline(std::cin, line);
+                                std::vector<std::string> input = split_str(line, ' ');
                             }
                         }
                     }

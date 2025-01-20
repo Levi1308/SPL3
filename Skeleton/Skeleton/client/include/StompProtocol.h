@@ -38,7 +38,7 @@ private:
 public:
     StompProtocol(ConnectionHandler& conn);
     void runServerInput();
-    Event parseEventReport(string report);
+    Event parseEventReport(string report,string channelName);
     vector<string> static split(string line, char delimiter);
     void runkeyboardInput();
     void IncreamentSubId();

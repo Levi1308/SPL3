@@ -25,7 +25,6 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
     public void process(String message) { //Receiving a frame & processing it
         StompFrame frame = new StompFrame(message); //Creating a StompFrame object using the constructor we built
         shouldTerminate = (frame.getCommand().equals("DISCONNECT"));
-        System.out.println(frame.toString());
         if(frame.getCommand().equals("CONNECT")) { //Client trying to connect to a user
             Map<String, String> frameHeaders = frame.getHeaders();
             String login = frameHeaders.get("login");
