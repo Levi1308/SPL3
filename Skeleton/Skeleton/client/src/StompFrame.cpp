@@ -109,5 +109,12 @@ string StompFrame::getBody()
 {
     return body;
 }
+string StompFrame::toStringHeaders(){
+    std::ostringstream oss;
+    for (const auto& pair : headers) {
+        oss << pair.first << ": " << pair.second << "\n";
+    }
+    return oss.str();
+}
 
 

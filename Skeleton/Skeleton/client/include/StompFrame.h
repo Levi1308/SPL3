@@ -23,4 +23,6 @@ public:
 	string getCommand();
 	map<string, string> getHeaders();
 	string getBody();
+
+	string toStringHeaders();
 };

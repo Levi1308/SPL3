@@ -52,10 +52,11 @@ void StompProtocol::runServerInput()
         if (hasAnswered)
         { // If a response from the server received
             StompFrame frame(answer);
-            cout << answer;
+            //cout << answer;
             if (frame.getCommand() == "CONNECTED")
             {
                 cout << "Login succesful" << endl;
+                cout << answer<<endl;
             }
             if (frame.getCommand() == "RECEIPT")
             {
@@ -81,23 +82,30 @@ void StompProtocol::runServerInput()
             else if (frame.getCommand() == "MESSAGE")
             { // If a message was received - a user sent a report and it needed to be saved
                 string report = frame.getBody();
-                cout << "body:\n" + report << endl;
-                auto it = frame.getHeaders().find("destination");
-                if (it != frame.getHeaders().end())
+                vector<string> input=split(answer,'\n');
+                string channel_name="";
+                for(string s: input){
+                    if (s.find("destination:") == 0) {
+                        channel_name = s.substr(s.find(':') + 1);
+                }
+                }
+                if(channel_name!="")
                 {
-                    string channel_name = it->first;
+                    //cout<<"Channel message name:"+channel_name+"\n"<<endl;
                     Event event = parseEventReport(report, channel_name);
-
                     string user = event.get_name();
                     connection.addReport(user, channel_name, event);
+                    cout<<frame.getCommand()+"\n"<<endl;
+                    cout<<frame.toStringHeaders()+"\n";
                 }
                 else
                 {
                     cout << "Frame missing destination" << endl;
                 }
-            }
+            
         }
     }
+}
 }
 
 vector<string> StompProtocol::split(string line, char delimiter)
@@ -175,7 +183,9 @@ Event StompProtocol::parseEventReport(string report, string channelName)
     } catch (const std::invalid_argument&) {
         throw std::runtime_error("Invalid date time format in the report.");
     }
-    return Event(channelName, city, eventName, dateTime, description, generalInformation);
+    Event event(channelName, city, eventName, dateTime, description, generalInformation);
+    event.setEventOwnerUser(user);
+    return event;
 }
 
 // Map to associate string commands with enum values
@@ -227,7 +237,7 @@ void StompProtocol::runkeyboardInput()
                 {
                     if (input.size() < 2)
                     {
-                        std::cout << "Error: join requires a channel name." << std::endl;
+                        std::cout << "join command needs 1 arguments {channel_name}" << std::endl;
                     }
                     else
                     {
@@ -266,8 +276,7 @@ void StompProtocol::runkeyboardInput()
                 {
                     if (input.size() < 2)
                     {
-                        std::cout << "Error: exit requires a channel name." << std::endl;
-                        // break;
+                        std::cout << "exit command needs 1 arguments {channel_name}" << std::endl;
                     }
                     else
                     {
@@ -298,7 +307,6 @@ void StompProtocol::runkeyboardInput()
                         else
                         {
                             std::cout << "channel not found!" << std::endl;
-                            // break;
                         }
                     }
                 }
@@ -313,7 +321,7 @@ void StompProtocol::runkeyboardInput()
                 {
                     if (input.size() < 2)
                     {
-                        std::cout << "Error: report requires a file path." << std::endl;
+                        std::cout << "join command needs 1 arguments {file_path}" << std::endl;
                     }
                     else
                     {
@@ -385,18 +393,22 @@ void StompProtocol::runkeyboardInput()
                 {
                     if (input.size() < 4)
                     {
-                        std::cout << "Error: summary requires channel name, user, and file path." << std::endl;
+                        std::cout << "summary command requires {channel name}, {user}, {and file path}" << std::endl;
                     }
                     else
                     {
-
                         std::string channel_name = input[1];
+                        cout<<"channel:"+ channel_name;
                         std::string user = input[2];
+                        cout<<"user:"+ user;
                         std::string file_path = input[3];
+                        cout<<"file path:"+ file_path;
                         auto it = subscriptions.find(channel_name);
                         if (it != subscriptions.end())
                         {
                             std::vector<Event> events = connection.getEventbyUser(channel_name, user);
+                            for(Event e: events)
+                                cout<<e.get_description()+"\n"<<endl;
                             // Now you can process the events or write them to a file
                             if (!events.empty())
                                 writeToFile(file_path, channel_name, events); // Assuming `writeToFile` is implemented as above
@@ -485,10 +497,9 @@ void StompProtocol::IncreamentSubId()
 }
 void StompProtocol::writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events)
 {
-    std::ofstream file(file_path);
+     std::ofstream file(file_path);
 
-    if (!file.is_open())
-    {
+    if (!file.is_open()) {
         std::cerr << "Failed to open file: " << file_path << std::endl;
         return;
     }
@@ -501,36 +512,38 @@ void StompProtocol::writeToFile(const std::string &file_path, const std::string 
     int active_count = 0;
     int forces_arrival_count = 0;
 
-    for (Event event : events)
-    {
-        if (event.get_general_information().count("active") && event.get_general_information().at("active") == "true")
-        {
+    for (const Event& event : events) {
+        if (event.get_general_information().count("active") &&
+            event.get_general_information().at("active") == "true") {
             active_count++;
         }
         if (event.get_general_information().count("forces_arrival_at_scene") &&
-            event.get_general_information().at("forces_arrival_at_scene") == "true")
-        {
+            event.get_general_information().at("forces_arrival_at_scene") == "true") {
             forces_arrival_count++;
         }
     }
 
     // Write statistics
-
     file << "Stats:\n";
-    file << "Total : " << total_reports << "\n";
-    file << "active : " << active_count << "\n";
-    file << "forces arrival at scene : " << forces_arrival_count << "\n";
+    file << "Total: " << total_reports << "\n";
+    file << "Active: " << active_count << "\n";
+    file << "Forces Arrival at Scene: " << forces_arrival_count << "\n";
 
     // Event Reports
     file << "Event Reports:\n";
     int report_number = 1;
-    for (Event event : events)
-    {
+    for (const Event& event : events) {
         file << "Report_" << report_number++ << ":\n";
-        file << "\tcity : " << event.get_city() << "\n";
-        file << "\tdate time : " << std::to_string(event.get_date_time()) << "\n";
-        file << "\tevent name : " << event.get_name() << "\n";
-        file << "\tsummary : " << event.get_description().substr(0, 100) << "...\n"; // Truncate description for summary
+        file << "\tCity: " << event.get_city() << "\n";
+        file << "\tDate Time: " << std::to_string(event.get_date_time()) << "\n";
+        file << "\tEvent Name: " << event.get_name() << "\n";
+
+        // Truncate description for summary (if needed)
+        std::string summary = event.get_description();
+        if (summary.length() > 100) { // Example length limit
+            summary = summary.substr(0, 97) + "...";
+        }
+        file << "\tSummary: " << summary << "\n";
     }
 
     file.close();

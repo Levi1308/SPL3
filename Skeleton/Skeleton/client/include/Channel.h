@@ -12,14 +12,14 @@ using namespace std;
 class Channel{
 private:
     string channel_name;
-    map<string, vector<Event>> events;
+    vector<Event> events;
      
 
 public:
     Channel(string channel_name);
     virtual ~Channel();
-    void addEvent(string user, Event event);
-	vector<Event> getEvents_ByUser(string user);
+    void addEvent(Event event);
+	vector<Event> getEvents_ByUser(const std::string& user);
 	string get_name();
     int getNumberDepartment();
 };

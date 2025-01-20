@@ -160,13 +160,16 @@ int ConnectionHandler::produceReceipt(string command) {
 }
 
 void ConnectionHandler::addReport(string user, string channel_name, Event report){
-	if (channels.find(channel_name) == channels.end()) {
+	auto it=channels.find(channel_name);
+	if (it == channels.end()) {
+		cout<<"create: "+ channel_name+" channel\n";
 		Channel channel(channel_name);
-		channel.addEvent(user, report);
+		channel.addEvent(report);
 		channels.insert({ channel_name, channel });
 	}
 	else {
-		channels.find(channel_name)->second.addEvent(user, report);
+		cout<<"add "+ channel_name+" new report\n";
+		it->second.addEvent(report);
 	}
 }
 
@@ -182,6 +185,7 @@ vector<Event> ConnectionHandler::getEventbyUser(std::string channelname,std::str
 	auto it=channels.find(channelname);
 	if(it!=channels.end())
 	{
+		cout<<"found the channel"<<endl;
 		return it->second.getEvents_ByUser(user);
 	}
 	return vector<Event>();
