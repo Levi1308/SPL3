@@ -57,7 +57,7 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
             }
             else { //User connection failed cause of wrong password
                 Map<String, String> outputHeaders = new HashMap<>();
-                outputHeaders.put("message", "Invalid password");
+                outputHeaders.put("message", "Wrong password");
                 StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
                 String output = outputFrame.createFrame();
                 activeConnections.send(connectionID, output);

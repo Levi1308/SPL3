@@ -27,7 +27,7 @@ class StompProtocol
 private:         
     bool terminateKeyboard;
     bool terminateServerResponses;
-    ConnectionHandler &connection;  
+    ConnectionHandler *connection;  
     int subscriptionId;
     std::map<std::string,int> subscriptions;
     bool loggedIn;
@@ -36,11 +36,11 @@ private:
 
 
 public:
-    StompProtocol(ConnectionHandler& conn);
+    StompProtocol(ConnectionHandler* conn);
     void runServerInput();
     Event parseEventReport(string report,string channelName);
     vector<string> static split(string line, char delimiter);
     void runkeyboardInput();
     void IncreamentSubId();
-    void writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events);
+    void writeToFile(const std::string &file_path, const std::string &channel_name, std::vector<Event> events);
 };

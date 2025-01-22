@@ -137,7 +137,6 @@ public String toStringActiveClients() {
     StringBuilder sb = new StringBuilder("Active Clients:\n");
     for (Map.Entry<Integer, ConnectionHandler<T>> entry : activeClients.entrySet()) {
         sb.append("Client ID: ").append(entry.getKey())
-          .append(", ConnectionHandler: ").append(entry.getValue().toString())
           .append("\n");
     }
     return sb.toString();
@@ -148,7 +147,6 @@ public String toStringChannels() {
     sb.append("Active Clients:\n");
     for (Map.Entry<Integer, ConnectionHandler<T>> entry : activeClients.entrySet()) {
         sb.append("Client ID: ").append(entry.getKey())
-          .append(", ConnectionHandler: ").append(entry.getValue().toString())
           .append("\n");
     }
 
@@ -156,8 +154,7 @@ public String toStringChannels() {
     for (Map.Entry<String, Map<ConnectionHandler<T>, Integer>> channel : channelsSubscriptions.entrySet()) {
         sb.append("Channel: ").append(channel.getKey()).append("\n");
         for (Map.Entry<ConnectionHandler<T>, Integer> subscription : channel.getValue().entrySet()) {
-            sb.append("  ConnectionHandler: ").append(subscription.getKey().toString())
-              .append(", Subscription ID: ").append(subscription.getValue())
+           sb.append(", Subscription ID: ").append(subscription.getValue())
               .append("\n");
         }
     }

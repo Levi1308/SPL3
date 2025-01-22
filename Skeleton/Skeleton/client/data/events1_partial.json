@@ -1,25 +1,205 @@
 {
-  "channel_name": "police",
-  "events": [
-      {
-          "event_name": "Grand Theft Auto",
-          "city": "Liberty City",
-          "date_time": "23/12/24 19:00",
-          "description": "Pink Lampadati Felon with license plate \"STOL3N1\". White male 1.85 with black baseball hat.",
-          "general_information": {
-              "active": true,
-              "forces_arrival_at_scene": false
-          }
-      },
-      {
-          "event_name": "Vandalism",
-          "city": "Los Alamos",
-          "date_time": "01/01/25 03:00",
-          "description": "Multiple cars were spray-painted in a residential neighborhood on Oak Drive. Suspect fled before police arrived.",
-          "general_information": {
-              "active": false,
-              "forces_arrival_at_scene": false
-          }
-      }
-  ]
+    "channel_name": "police",
+    "events": [
+        {
+            "event_name": "Carjacking",
+            "city": "San Fierro",
+            "date_time": 1735257600,
+            "description": "A silver sports car was hijacked at gunpoint near the Marina District. Suspect fled eastbound.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Breaking and Entering",
+            "city": "Hyrule",
+            "date_time": 1735279200,
+            "description": "A suspect entered an occupied home through an unlocked front door. Homeowner scared them off.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Shoplifting",
+            "city": "Dewford Town",
+            "date_time": 1735299900,
+            "description": "Teenager was caught attempting to steal electronics from Mega Mart. No injuries reported.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Fraud Investigation",
+            "city": "Nibelheim",
+            "date_time": 1735320600,
+            "description": "Elderly resident reported being scammed out of $5,000 by a phone call impersonating a government official.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Domestic Disturbance",
+            "city": "Traverse Town",
+            "date_time": 1735352400,
+            "description": "Police responded to a verbal altercation between neighbors on Elmwood Lane. Situation resolved on scene.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Missing Person",
+            "city": "Kanto",
+            "date_time": 1735374000,
+            "description": "A 16-year-old was reported missing after not returning home from school. Last seen wearing a red jacket.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Cybercrime",
+            "city": "Neo Tokyo",
+            "date_time": 1735405800,
+            "description": "Reports of phishing attempts targeting local businesses. Investigation underway.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Road Rage Incident",
+            "city": "Hill Valley",
+            "date_time": 1735437600,
+            "description": "A confrontation between two drivers led to minor property damage on Route 66.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Arson",
+            "city": "Woodbury",
+            "date_time": 1735469400,
+            "description": "Vacant building set ablaze on Maple Street. Firefighters extinguished the flames. Investigation ongoing.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Kidnapping",
+            "city": "Metro City",
+            "date_time": 1735501200,
+            "description": "Child abducted from local park. Suspect fled in a white van. Authorities are searching the area.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Suspicious Package",
+            "city": "Springfield",
+            "date_time": 1735533000,
+            "description": "Package left unattended at a busy train station. Bomb squad cleared the scene after investigation.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Traffic Collision",
+            "city": "Emerald City",
+            "date_time": 1735564800,
+            "description": "Two-vehicle accident at the intersection of Pine and Main. No injuries reported. Vehicles towed.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Animal Cruelty",
+            "city": "Smallville",
+            "date_time": 1735596600,
+            "description": "Dog found chained and malnourished in an abandoned yard. Rescued by local animal control.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Protest",
+            "city": "Zion",
+            "date_time": 1735628400,
+            "description": "Peaceful demonstration held downtown with over 1,000 participants. No arrests made.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Bank Fraud",
+            "city": "Rapture",
+            "date_time": 1735660200,
+            "description": "Local bank reported unauthorized transactions involving customer accounts. Investigation ongoing.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Riot",
+            "city": "Panem",
+            "date_time": 1735692000,
+            "description": "Massive altercation broke out at City Square following a contentious political rally. Police dispersed the crowd.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Public Intoxication",
+            "city": "Atlantis",
+            "date_time": 1735723800,
+            "description": "Individual arrested for causing a disturbance outside a local pub. No injuries reported.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Buried Explosives Found",
+            "city": "Bright Falls",
+            "date_time": 1735755600,
+            "description": "Construction workers unearthed old explosives near the highway. Bomb squad secured the area.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": true
+            }
+        },
+        {
+            "event_name": "Power Outage",
+            "city": "Black Mesa",
+            "date_time": 1735787400,
+            "description": "Citywide blackout caused by a transformer failure. Repairs are underway. No injuries reported.",
+            "general_information": {
+                "active": true,
+                "forces_arrival_at_scene": false
+            }
+        },
+        {
+            "event_name": "Trespassing",
+            "city": "Silent Hill",
+            "date_time": 1735819200,
+            "description": "Unauthorized entry reported at an abandoned factory. Suspect fled before police arrived.",
+            "general_information": {
+                "active": false,
+                "forces_arrival_at_scene": false
+            }
+        }
+    ]
 }

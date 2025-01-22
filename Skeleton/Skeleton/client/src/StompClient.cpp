@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
             {
                 string host = partsOfCommand[1].substr(0, partsOfCommand[1].find(':'));
                 short port = stoi(partsOfCommand[1].substr(partsOfCommand[1].find(':') + 1));
-                ConnectionHandler connectionHandler(host, port);
+                ConnectionHandler connectionHandler(host,port);
                 if (!connectionHandler.connect())
                 {
                     std::cerr << "Cannot connect to " << host << ":" << port << std::endl;
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
                         try
                         {
 
-                            StompProtocol protocol(connectionHandler);
+                            StompProtocol protocol(&connectionHandler);
                             // Start threads for input and server handling
                             std::thread serverThread(&StompProtocol::runServerInput, &protocol);
                             protocol.runkeyboardInput();

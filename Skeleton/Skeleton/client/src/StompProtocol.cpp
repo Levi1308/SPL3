@@ -22,7 +22,7 @@
 
 using namespace std;
 
-StompProtocol::StompProtocol(ConnectionHandler &conn) : terminateKeyboard(false), terminateServerResponses(false),
+StompProtocol::StompProtocol(ConnectionHandler *conn) : terminateKeyboard(false), terminateServerResponses(false),
                                                         connection(conn), subscriptionId(0), subscriptions(), loggedIn(true), cv(), cvMutex()
 {
 }
@@ -40,7 +40,7 @@ void StompProtocol::runServerInput()
         lock.unlock();
 
         std::string answer;
-        bool hasAnswered = connection.getLine(answer); // Receiving a response from the server
+        bool hasAnswered = connection->getLine(answer); // Receiving a response from the server
         if (!hasAnswered)
         { // If the server connection was closed and no response receieved - close the client
             std::cout << "Disconnected. Exiting...\n"
@@ -62,7 +62,7 @@ void StompProtocol::runServerInput()
             {
                 map<string, string> headers = frame.getHeaders();
                 string receiptID = headers.find("receipt-id")->second;
-                string receiptCOMMAND = connection.findReceiptCommand(receiptID);
+                string receiptCOMMAND = connection->findReceiptCommand(receiptID);
                 if (receiptCOMMAND == "DISCONNECT")
                 { // If the receipt received is for a DISCONNECT frame - close the connection
                     cout << "Logged out" << endl;
@@ -70,14 +70,18 @@ void StompProtocol::runServerInput()
                     cout << "recipet-id:" + receiptID << endl;
                     loggedIn = false;
                     std::lock_guard<std::mutex> lock(cvMutex);
+                    //delete connection;
                 }
                 cv.notify_all();
             }
             else if (frame.getCommand() == "ERROR")
             {
-                terminateKeyboard = true;
+                //terminateKeyboard = true;
                 terminateServerResponses = true;
-                connection.close();
+                cout<<frame.createFrame()<<endl;
+                connection->close();
+                loggedIn=false;
+                //delete connection;
             }
             else if (frame.getCommand() == "MESSAGE")
             { // If a message was received - a user sent a report and it needed to be saved
@@ -94,7 +98,7 @@ void StompProtocol::runServerInput()
                     //cout<<"Channel message name:"+channel_name+"\n"<<endl;
                     Event event = parseEventReport(report, channel_name);
                     string user = event.get_name();
-                    connection.addReport(user, channel_name, event);
+                    connection->addReport(user, channel_name, event);
                     cout<<frame.getCommand()+"\n"<<endl;
                     cout<<frame.toStringHeaders()+"\n";
                 }
@@ -243,7 +247,7 @@ void StompProtocol::runkeyboardInput()
                     {
                         string join_command = "SUBSCRIBE";
                         string channel_name = input[1];
-                        int receipt = connection.produceReceipt(join_command);
+                        int receipt = connection->produceReceipt(join_command);
                         map<string, string> headers;
                         headers.insert({"destination", channel_name});
                         headers.insert({"id", std::to_string(subscriptionId)});
@@ -253,7 +257,7 @@ void StompProtocol::runkeyboardInput()
                         string output = frame.createFrame();
                         cout << output << endl;
                         // Send the subscription message
-                        if (!connection.sendFrame(output))
+                        if (!connection->sendFrame(output))
                         {
                             std::cerr << "Failed to send subscription message for channel:" << channel_name << std::endl;
                             continue;
@@ -281,7 +285,7 @@ void StompProtocol::runkeyboardInput()
                     else
                     {
                         string exit_command = "UNSUBSCRIBE";
-                        int receipt = connection.produceReceipt(exit_command);
+                        int receipt = connection->produceReceipt(exit_command);
                         string channel_name = input[1];
                         auto it = subscriptions.find(channel_name);
                         if (it != subscriptions.end())
@@ -294,7 +298,7 @@ void StompProtocol::runkeyboardInput()
                             string output = frame.createFrame();
                             cout << output << endl;
                             // Send the subscription message
-                            if (!connection.sendFrame(output))
+                            if (!connection->sendFrame(output))
                             {
                                 std::cerr << "Failed to send unsubscription message for channel:" << channel_name << std::endl;
                                 // break;
@@ -319,7 +323,7 @@ void StompProtocol::runkeyboardInput()
             {
                 if (loggedIn)
                 {
-                    if (input.size() < 2)
+                    if (input.size() != 2)
                     {
                         std::cout << "join command needs 1 arguments {file_path}" << std::endl;
                     }
@@ -333,12 +337,13 @@ void StompProtocol::runkeyboardInput()
                         // Extract channel name and events
                         std::string channelName = parsedData.channel_name;
                         std::vector<Event> events = parsedData.events;
-
+                        if(!(subscriptions.find(channelName)==subscriptions.end()))
+                        {
                         for (Event e : events)
                         {
                             headers.insert({"destination", channelName});
                             cout << "Started for loop" << endl;
-                            string body = "user:" + connection.getLoginedUser() + "\n";
+                            string body = "user:" + connection->getLoginedUser() + "\n";
                             body += "city:" + e.get_city() + "\n";
                             body += "event name:" + e.get_name() + "\n";
                             body += "date time:" + std::to_string(e.get_date_time()) + "\n";
@@ -359,7 +364,7 @@ void StompProtocol::runkeyboardInput()
                                     StompFrame frame(report_command, headers, body);
                                     string output = frame.createFrame();
                                     cout << output << endl;
-                                    if (!connection.sendFrame(output))
+                                    if (!connection->sendFrame(output))
                                     {
                                         std::cerr << "Failed to send unsubscription message for channel:" << channelName << std::endl;
                                         // break;
@@ -379,6 +384,10 @@ void StompProtocol::runkeyboardInput()
                                 // break;
                             }
                             headers.clear();
+                        }
+                        }
+                        else{
+                            cout<<"Channel does not found"<<endl;
                         }
                     }
                 }
@@ -406,7 +415,7 @@ void StompProtocol::runkeyboardInput()
                         auto it = subscriptions.find(channel_name);
                         if (it != subscriptions.end())
                         {
-                            std::vector<Event> events = connection.getEventbyUser(channel_name, user);
+                            std::vector<Event> events = connection->getEventbyUser(channel_name, user);
                             for(Event e: events)
                                 cout<<e.get_description()+"\n"<<endl;
                             // Now you can process the events or write them to a file
@@ -431,13 +440,13 @@ void StompProtocol::runkeyboardInput()
                 if (loggedIn)
                 {
                     string logout_command = "DISCONNECT";
-                    int receipt = connection.produceReceipt(logout_command);
+                    int receipt = connection->produceReceipt(logout_command);
                     map<string, string> headers;
                     headers.insert({"receipt", to_string(receipt)});
                     StompFrame frame(logout_command, headers, "");
                     string output = frame.createFrame();
                     cout << output << endl;
-                    if (connection.sendFrame(output))
+                    if (connection->sendFrame(output))
                         subscriptions.clear();
                     else
                     {
@@ -471,13 +480,22 @@ void StompProtocol::runkeyboardInput()
                             StompFrame frame(command, headers, "");
                             string output = frame.createFrame();
                             cout << output << endl;
-                            connection.connectUser(input[2]);
-                            if (connection.sendFrame(output))
+                            string host = input[1].substr(0, input[1].find(':'));
+                            short port = stoi(input[1].substr(input[1].find(':') + 1));
+                            connection=new ConnectionHandler(host,port);
+                            terminateServerResponses = true;
+                            connection->connect();
+                            connection->connectUser(input[2]);
+                            if (connection->sendFrame(output))
+                            {
                                 loggedIn = true;
+                               
+                            }
                             else
                             {
                                 std::getline(std::cin, line);
                                 std::vector<std::string> input = split_str(line, ' ');
+                                 terminateServerResponses = true;
                             }
                         }
                     }
@@ -495,10 +513,19 @@ void StompProtocol::IncreamentSubId()
 {
     subscriptionId++;
 }
-void StompProtocol::writeToFile(const std::string &file_path, const std::string &channel_name, const std::vector<Event> &events)
-{
-     std::ofstream file(file_path);
+// Assume Event class has the appropriate methods defined
+void StompProtocol::writeToFile(const std::string &file_path, const std::string &channel_name, std::vector<Event> events) {
+    // Helper function to convert epoch time to date-time string
+    auto epoch_to_date = [](long long epoch_time) -> std::string {
+        std::time_t time = static_cast<std::time_t>(epoch_time);
+        std::tm *tm_ptr = std::gmtime(&time);
+        std::ostringstream oss;
+        oss << std::put_time(tm_ptr, "%d/%m/%y %H:%M");
+        return oss.str();
+    };
 
+    // Open file for writing
+    std::ofstream file(file_path, std::ios::trunc); // Overwrite the file
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << file_path << std::endl;
         return;
@@ -512,15 +539,16 @@ void StompProtocol::writeToFile(const std::string &file_path, const std::string 
     int active_count = 0;
     int forces_arrival_count = 0;
 
-    for (const Event& event : events) {
-        if (event.get_general_information().count("active") &&
-            event.get_general_information().at("active") == "true") {
-            active_count++;
-        }
-        if (event.get_general_information().count("forces_arrival_at_scene") &&
-            event.get_general_information().at("forces_arrival_at_scene") == "true") {
-            forces_arrival_count++;
-        }
+    for (const Event &event : events) {
+        const auto &info = event.get_general_information();
+        auto it=info.find("active");
+        if(it!=info.end())
+            if((it->second).compare("true")==0)
+                active_count++;
+        it=info.find("forces_arrival_at_scene");
+        if(it!=info.end())
+            if((it->second).compare("true")==0)
+                forces_arrival_count++;
     }
 
     // Write statistics
@@ -529,19 +557,27 @@ void StompProtocol::writeToFile(const std::string &file_path, const std::string 
     file << "Active: " << active_count << "\n";
     file << "Forces Arrival at Scene: " << forces_arrival_count << "\n";
 
-    // Event Reports
+    // Sort events by date_time and then by event_name
+    std::sort(events.begin(), events.end(), [](const Event &a, const Event &b) {
+        if (a.get_date_time() != b.get_date_time()) {
+            return a.get_date_time() < b.get_date_time();
+        }
+        return a.get_name() < b.get_name();
+    });
+
+    // Write event reports
     file << "Event Reports:\n";
     int report_number = 1;
-    for (const Event& event : events) {
+    for (const Event &event : events) {
         file << "Report_" << report_number++ << ":\n";
         file << "\tCity: " << event.get_city() << "\n";
-        file << "\tDate Time: " << std::to_string(event.get_date_time()) << "\n";
+        file << "\tDate Time: " << epoch_to_date(event.get_date_time()) << "\n";
         file << "\tEvent Name: " << event.get_name() << "\n";
 
-        // Truncate description for summary (if needed)
+        // Truncate description for summary
         std::string summary = event.get_description();
-        if (summary.length() > 100) { // Example length limit
-            summary = summary.substr(0, 97) + "...";
+        if (summary.length() > 27) {
+            summary = summary.substr(0, 27) + "...";
         }
         file << "\tSummary: " << summary << "\n";
     }
