@@ -4,6 +4,7 @@
 #include "StompFrame.h"
 #include <string>
 #include <map>
+#include <queue>
 #include <fstream>
 #include <iostream>
 #include "Channel.h"
@@ -33,11 +34,12 @@ private:
     bool loggedIn;
     std::condition_variable cv;
     std::mutex cvMutex;
-
+    queue<string> waitframe;
 
 public:
     StompProtocol(ConnectionHandler* conn);
     void runServerInput();
+    void processServerInput(string answer);
     Event parseEventReport(string report,string channelName);
     vector<string> static split(string line, char delimiter);
     void runkeyboardInput();

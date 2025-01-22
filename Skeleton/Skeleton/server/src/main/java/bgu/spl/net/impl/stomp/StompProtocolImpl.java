@@ -35,25 +35,26 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 outputHeaders.put("message", "User is already connected");
                 StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
                 String output = outputFrame.createFrame();
-                activeConnections.send(connectionID, output); //Sending back error frame
-                try {
-                    Thread.sleep(100);
+                if(activeConnections.send(connectionID, output)) //Sending back error frame
+                { 
+                    try{
+                        activeConnections.getConnection(connectionID).close();
+                        activeConnections.disconnect(connectionID);
+                        activeConnections.removeConnection(connectionID);
+                        shouldTerminate = true;
                     }
-                    catch(Exception ex) {}
-                try {
-                    shouldTerminate = true;
-                    activeConnections.disconnect(connectionID); //Resetting all client related data (subscriptions & from loggedIn clients list)
-                    activeConnections.getConnection(connectionID).close();
-                    activeConnections.removeConnection(connectionID);
+                    catch(Exception ex){
+                        System.err.println(ex);
+                    }
                 }
-                catch (IOException exception) {}
             }
             else if (activeConnections.connectUser(login, passcode, connectionID)) { //Trying to connect the user to the client
                 Map<String, String> outputHeaders = new HashMap<>();
                 outputHeaders.put("version", "1.2");
                 StompFrame outputFrame = new StompFrame("CONNECTED", outputHeaders, "");
                 String output = outputFrame.createFrame();
-                activeConnections.send(connectionID, output);
+                if(activeConnections.send(connectionID, output))
+                    System.out.println("I SEND CONNECTED FRAME");
             }
             else { //User connection failed cause of wrong password
                 Map<String, String> outputHeaders = new HashMap<>();
@@ -61,17 +62,19 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
                 String output = outputFrame.createFrame();
                 activeConnections.send(connectionID, output);
-                try {
-                    Thread.sleep(100);
+                if(activeConnections.send(connectionID, output)) //Sending back error frame
+                {
+                    try{
+                        activeConnections.getConnection(connectionID).close();
+                        activeConnections.disconnect(connectionID);
+                        activeConnections.removeConnection(connectionID);
+                        shouldTerminate = true;
                     }
-                    catch(Exception ex) {}
-                try {
-                    shouldTerminate = true;
-                    activeConnections.disconnect(connectionID);
-                    activeConnections.getConnection(connectionID).close();
-                    activeConnections.removeConnection(connectionID);
+                    catch(Exception ex){
+                        System.err.println(ex);
+                    }
+                    
                 }
-                catch (IOException exception) {}
             }
         }
         else if (frame.getCommand().equals("DISCONNECT")) {
@@ -103,19 +106,20 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 outputHeaders.put("message", "The user isn't subscribed with that number: " + subscriptionID);
                 StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
                 String output = outputFrame.createFrame();
-                activeConnections.send(connectionID, output);
-                try {
-                    Thread.sleep(100);
+                if(activeConnections.send(connectionID, output)) //Sending back error frame
+                {
+                    
+                    try{
+                        activeConnections.getConnection(connectionID).close();
+                        activeConnections.disconnect(connectionID);
+                        activeConnections.removeConnection(connectionID);
+                        shouldTerminate = true;
                     }
-                    catch(Exception ex) {}
-                try {
-                    shouldTerminate = true;
-                    activeConnections.disconnect(connectionID);
-                    activeConnections.getConnection(connectionID).close();
-                    activeConnections.removeConnection(connectionID);
+                    catch(Exception ex){
+                        System.err.println(ex);
+                    }
                 }
-                catch (IOException exception) {}
-            }
+             }
             
         }
         else if (frame.getCommand().equals("SUBSCRIBE")) { //Trying to add the user to the requested subscription
@@ -138,18 +142,18 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 outputHeaders.put("message", "The user already subscribed to channel: " + channel);
                 StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
                 String output = outputFrame.createFrame();
-                activeConnections.send(connectionID, output);
-                try {
-                Thread.sleep(100);
+                if(activeConnections.send(connectionID, output))
+                {
+                    try{
+                        activeConnections.getConnection(connectionID).close();
+                        activeConnections.disconnect(connectionID);
+                        activeConnections.removeConnection(connectionID);
+                        shouldTerminate = true;
+                    }
+                    catch(Exception ex){
+                        System.err.println(ex);
+                    }
                 }
-                catch(Exception ex) {}
-                try {
-                    shouldTerminate = true;
-                    activeConnections.disconnect(connectionID);
-                    activeConnections.getConnection(connectionID).close();
-                    activeConnections.removeConnection(connectionID);
-                }
-                catch (IOException exception) {}
             }
             
         }
@@ -163,20 +167,20 @@ public class StompProtocolImpl implements StompMessagingProtocol<String> {
                 StompFrame outputFrame = new StompFrame("ERROR", outputHeaders, "");
                 String output = outputFrame.createFrame();
                 activeConnections.send(connectionID, output);
-                try {
-                    Thread.sleep(100);
+                if(activeConnections.send(connectionID, output)) //Sending back error frame
+                {
+                    try{
+                        activeConnections.getConnection(connectionID).close();
+                        activeConnections.disconnect(connectionID);
+                        activeConnections.removeConnection(connectionID);
+                        shouldTerminate = true;
                     }
-                    catch(Exception ex) {}
-                try {
-                    shouldTerminate = true;
-                    activeConnections.disconnect(connectionID);
-                    activeConnections.getConnection(connectionID).close();
-                    activeConnections.removeConnection(connectionID);
+                    catch(Exception ex){
+                        System.err.println(ex);
+                    }
                 }
-                catch (IOException exception) {}
             }
             else { //The user is subscribed to the reported channel
-                
                 String bodyMessage = frame.getBody();
                 System.out.println("body-"+bodyMessage);
                 Map<String, String> outputHeaders = new HashMap<>();

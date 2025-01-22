@@ -1,106 +1,41 @@
 Channel < police >
 Stats:
-Total: 20
-Active: 0
-Forces Arrival at Scene: 0
+Total: 7
+Active: 5
+Forces Arrival at Scene: 4
 Event Reports:
 Report_1:
-	City: San Fierro
-	Date Time: 27/12/24 00:00
-	Event Name: Carjacking
-	Summary: A silver sports car was hij...
+	City: Raccoon City
+	Date Time: 23/12/24 07:45
+	Event Name: Burglary
+	Summary: Suspect broke into a reside...
 Report_2:
-	City: Hyrule
-	Date Time: 27/12/24 06:00
-	Event Name: Breaking and Entering
-	Summary: A suspect entered an occupi...
+	City: Liberty City
+	Date Time: 23/12/24 13:40
+	Event Name: Grand Theft Auto
+	Summary: Pink Lampadati Felon with l...
 Report_3:
-	City: Dewford Town
-	Date Time: 27/12/24 11:45
-	Event Name: Shoplifting
-	Summary: Teenager was caught attempt...
+	City: Vice City
+	Date Time: 24/12/24 02:20
+	Event Name: Hit and Run
+	Summary: Black SUV struck a pedestri...
 Report_4:
-	City: Nibelheim
-	Date Time: 27/12/24 17:30
-	Event Name: Fraud Investigation
-	Summary: Elderly resident reported b...
-Report_5:
-	City: Traverse Town
-	Date Time: 28/12/24 02:20
-	Event Name: Domestic Disturbance
-	Summary: Police responded to a verba...
-Report_6:
-	City: Kanto
-	Date Time: 28/12/24 08:20
-	Event Name: Missing Person
-	Summary: A 16-year-old was reported ...
-Report_7:
-	City: Neo Tokyo
-	Date Time: 28/12/24 17:10
-	Event Name: Cybercrime
-	Summary: Reports of phishing attempt...
-Report_8:
-	City: Hill Valley
-	Date Time: 29/12/24 02:00
-	Event Name: Road Rage Incident
-	Summary: A confrontation between two...
-Report_9:
-	City: Woodbury
-	Date Time: 29/12/24 10:50
-	Event Name: Arson
-	Summary: Vacant building set ablaze ...
-Report_10:
-	City: Metro City
-	Date Time: 29/12/24 19:40
-	Event Name: Kidnapping
-	Summary: Child abducted from local p...
-Report_11:
-	City: Springfield
-	Date Time: 30/12/24 04:30
-	Event Name: Suspicious Package
-	Summary: Package left unattended at ...
-Report_12:
-	City: Emerald City
-	Date Time: 30/12/24 13:20
-	Event Name: Traffic Collision
-	Summary: Two-vehicle accident at the...
-Report_13:
-	City: Smallville
-	Date Time: 30/12/24 22:10
-	Event Name: Animal Cruelty
-	Summary: Dog found chained and malno...
-Report_14:
-	City: Zion
-	Date Time: 31/12/24 07:00
-	Event Name: Protest
-	Summary: Peaceful demonstration held...
-Report_15:
-	City: Rapture
-	Date Time: 31/12/24 15:50
-	Event Name: Bank Fraud
-	Summary: Local bank reported unautho...
-Report_16:
-	City: Panem
-	Date Time: 01/01/25 00:40
-	Event Name: Riot
-	Summary: Massive altercation broke o...
-Report_17:
-	City: Atlantis
-	Date Time: 01/01/25 09:30
-	Event Name: Public Intoxication
-	Summary: Individual arrested for cau...
-Report_18:
-	City: Bright Falls
-	Date Time: 01/01/25 18:20
-	Event Name: Buried Explosives Found
-	Summary: Construction workers uneart...
-Report_19:
-	City: Black Mesa
-	Date Time: 02/01/25 03:10
-	Event Name: Power Outage
-	Summary: Citywide blackout caused by...
-Report_20:
 	City: Silent Hill
-	Date Time: 02/01/25 12:00
-	Event Name: Trespassing
-	Summary: Unauthorized entry reported...
+	Date Time: 24/12/24 22:15
+	Event Name: Armed Robbery
+	Summary: Two masked suspects armed w...
+Report_5:
+	City: Pallet Town
+	Date Time: 25/12/24 21:30
+	Event Name: Assault
+	Summary: Male suspect assaulted anot...
+Report_6:
+	City: Gotham City
+	Date Time: 26/12/24 06:20
+	Event Name: Drug Possession Arrest
+	Summary: Police apprehended a suspec...
+Report_7:
+	City: Los Alamos
+	Date Time: 31/12/24 21:40
+	Event Name: Vandalism
+	Summary: Multiple cars were spray-pa...
