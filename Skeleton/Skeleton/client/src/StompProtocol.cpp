@@ -31,22 +31,18 @@ void StompProtocol::runServerInput()
 {
     while (true)
     {
-        std::unique_lock<std::mutex> lock(cvMutex);
-
-        cv.wait(lock, [this]
-                { return loggedIn; });
-
-        lock.unlock();
         std::string answer, input;
-        bool hasAnswered = connection->getLine(answer); // Receiving a response from the server
+        if(connection->isLogined())
+        {
+        connection->getLine(answer); // Receiving a response from the server
+        /*
         if (!hasAnswered)
         { // If the server connection was closed and no response receieved - close the client
             std::cout << "Disconnected. Exiting...\n"
                       << std::endl;
             terminateKeyboard = true;
             break;
-        }
-
+        }*/
         if (terminateServerResponses)
         {
             waitframe.push(answer);
@@ -59,10 +55,8 @@ void StompProtocol::runServerInput()
                 waitframe.pop();                       // Remove the front element
                 processServerInput(input);             // Process the input
             }
-            if (hasAnswered)
-            {
-                processServerInput(answer);
-            }
+            processServerInput(answer);
+        }
         }
     }
 }
@@ -87,8 +81,7 @@ void StompProtocol::processServerInput(string answer)
             cout << "recipet-id:" + receiptID << endl;
             terminateServerResponses = true;
             loggedIn = false;
-            std::lock_guard<std::mutex> lock(cvMutex);
-            // delete connection;
+            runServerInput();
         }
         else
         {
@@ -522,7 +515,6 @@ void StompProtocol::runkeyboardInput()
                         {
                             while (!loggedIn)
                             {
-                                terminateServerResponses = true;
                                 string command = "CONNECT";
                                 map<string, string> headers;
                                 headers.insert({"accept-version", "1.2"});
@@ -543,9 +535,12 @@ void StompProtocol::runkeyboardInput()
                                     {
                                         cout << "Win2" << endl;
                                         loggedIn = true;
+                                        cv.notify_all();
                                     }
                                     else
                                     {
+                                        loggedIn = false;
+                                        terminateServerResponses = true;
                                         cout << "Dont Win2" << endl;
                                         std::getline(std::cin, line);
                                         std::vector<std::string> input = split_str(line, ' ');
