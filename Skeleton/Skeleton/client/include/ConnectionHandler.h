@@ -23,6 +23,7 @@ private:
 	bool logined; //Does the connection logined to a specific user
 	int receiptNumber; //Generator of receipt numbers
 	map<string, string> receipts; 
+	map<string, int> subscriptions;
 	
 
 public:
@@ -36,6 +37,8 @@ public:
 	bool getFrame(std::string &frame);
 	bool sendFrame(std::string & frame);
 	vector<Event> getEventbyUser(std::string channelname,std::string user);
+	int insertSub(string channel);
+	int getSubID(string channel);
 
 	ConnectionHandler(std::string host, short port);
 

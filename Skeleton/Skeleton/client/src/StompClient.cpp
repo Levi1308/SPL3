@@ -49,16 +49,12 @@ int main(int argc, char *argv[])
                         try
                         {
 
-                            StompProtocol protocol(&connectionHandler);
-                            // Start threads for input and server handling
-                            std::thread serverThread(&StompProtocol::runServerInput, &protocol);
-                            protocol.runkeyboardInput();
-
-                            // Join threads
+                            StompProtocol protocol(connectionHandler);
+                            thread serverThread(&StompProtocol::server_response_process, &protocol); //This thread is responsible to receive answers from the server & process them
+                            thread keyboardThread(&StompProtocol::run_keyboard, &protocol); //This thread is responsible to receive inputs from the keyboard, process them & send them to the server
                             serverThread.join();
-                            // keyboardThread.join();
-                            return 0;
-                        }
+                            keyboardThread.join();
+                        }       
                         catch (const std::exception &e)
                         {
                             cout << "An error received, disconnecting.." << endl;

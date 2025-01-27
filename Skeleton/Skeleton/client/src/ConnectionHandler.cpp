@@ -12,7 +12,7 @@ using std::string;
 
 ConnectionHandler::ConnectionHandler(string host, short port) : host_(host), port_(port), io_service_(),
                                                                 socket_(io_service_),channels(),  currentUser(), logined(false),
-																 receiptNumber(0), receipts() {}
+																 receiptNumber(0), receipts(), subscriptions()  {}
 
 
 ConnectionHandler::~ConnectionHandler() {
@@ -189,6 +189,27 @@ vector<Event> ConnectionHandler::getEventbyUser(std::string channelname,std::str
 		return it->second.getEvents_ByUser(user);
 	}
 	return vector<Event>();
+}
+
+int ConnectionHandler::getSubID(string channel) {
+	if (subscriptions.find(channel) != subscriptions.end()) {
+		return subscriptions.find(channel)->second;
+	}
+	else {
+		return -1;
+	}
+}
+
+int ConnectionHandler::insertSub(string channel) {
+	int subID;
+	if (subscriptions.empty()) {
+		subID = 0;
+	}
+	else {
+		subID = subscriptions.size();
+	}
+	subscriptions.insert({channel, subID});
+	return subID;
 }
 
 

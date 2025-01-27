@@ -1,0 +1,41 @@
+Channel < police >
+Stats:
+Total: 7
+Active: 5
+Forces Arrival at Scene: 4
+Event Reports:
+Report_1:
+	City: Raccoon City
+	Date Time: 23/12/24 07:45
+	Event Name: Burglary
+	Summary: Suspect broke into a reside...
+Report_2:
+	City: Liberty City
+	Date Time: 23/12/24 13:40
+	Event Name: Grand Theft Auto
+	Summary: Pink Lampadati Felon with l...
+Report_3:
+	City: Vice City
+	Date Time: 24/12/24 02:20
+	Event Name: Hit and Run
+	Summary: Black SUV struck a pedestri...
+Report_4:
+	City: Silent Hill
+	Date Time: 24/12/24 22:15
+	Event Name: Armed Robbery
+	Summary: Two masked suspects armed w...
+Report_5:
+	City: Pallet Town
+	Date Time: 25/12/24 21:30
+	Event Name: Assault
+	Summary: Male suspect assaulted anot...
+Report_6:
+	City: Gotham City
+	Date Time: 26/12/24 06:20
+	Event Name: Drug Possession Arrest
+	Summary: Police apprehended a suspec...
+Report_7:
+	City: Los Alamos
+	Date Time: 31/12/24 21:40
+	Event Name: Vandalism
+	Summary: Multiple cars were spray-pa...
